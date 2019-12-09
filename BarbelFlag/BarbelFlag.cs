@@ -33,7 +33,10 @@ namespace BarbelFlag
         {
             public GlobalSetting Setting;
             public GameInstance Game;
+            public int TeamID;
         }
+
+        public int TeamID { get; protected set; }
 
         private GlobalSetting globalSetting;
         private GameInstance gameInstance;
@@ -42,9 +45,21 @@ namespace BarbelFlag
         {
             globalSetting = initializer.Setting;
             gameInstance = initializer.Game;
+            TeamID = initializer.TeamID;
         }
 
         public int Score { get; private set; }
+
+        public void StartCapture(Flag flag)
+        {
+            flag.CaptureStatus = Flag.FlagCaptureStatus.Capturing;
+        }
+
+        public void DoneCapture(Flag flag)
+        {
+            flag.OwnerTeamID = TeamID;
+            flag.CaptureStatus = Flag.FlagCaptureStatus.Captured;
+        }
 
         public void RaiseScoreDummy()
         {
@@ -53,16 +68,22 @@ namespace BarbelFlag
         }
     }
 
-    //public class Field
-    //{
-    //}
-
-
-    public static class BarbelFlagMain
+    public class Flag
     {
-        public static void Main()
+        public enum FlagCaptureStatus
         {
+            Initial = 0,
+            Capturing = 5,
+            Captured = 10
+        }
 
+        public FlagCaptureStatus CaptureStatus { get; set; }
+
+        public int OwnerTeamID { get; set; }
+
+        public Flag()
+        {
+            OwnerTeamID = 0;   
         }
     }
 }
