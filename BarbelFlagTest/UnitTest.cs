@@ -6,6 +6,7 @@ TODO
 --------------------------------------------------
 Definition:
 * game instance
+* - message queue to handle events
 * - instantiate teams
 * - instantiate flags 
 * - manage team scores / win condition
@@ -82,7 +83,7 @@ namespace BarbelFlagTest
 
         [TestMethod]
         public void Test21TeamCaptureAFlag()
-        {            
+        {
             var dummyFlag = new Flag();
             var dummyTeamID = 123;
             var dummyTeam = new Team(new Team.Initializer
@@ -104,7 +105,7 @@ namespace BarbelFlagTest
         {
             var teamID1 = 123;
             var team1 = new Team(new Team.Initializer
-            { 
+            {
                 TeamID = teamID1
             });
 
@@ -125,6 +126,32 @@ namespace BarbelFlagTest
 
             Assert.AreEqual(flag1.OwnerTeamID, team1.TeamID);
             Assert.AreEqual(flag2.OwnerTeamID, team2.TeamID);
+        }
+
+        [TestMethod]
+        public void Test23GetScoreFromFlag()
+        {
+            var flag1 = new Flag();
+            var teamID1 = 123;
+            var team1 = new Team(new Team.Initializer
+            {
+                TeamID = teamID1
+            });
+
+            team1.StartCapture(flag1);
+            team1.DoneCapture(flag1);
+
+            Assert.AreEqual(flag1.Score, 0);
+
+            flag1.GenScore();
+
+            Assert.AreEqual(flag1.Score, 10);
+        }
+
+        [TestMethod]
+        public void Test24GetScoreFromFlagOverTime()
+        {
+
         }
     }
 }

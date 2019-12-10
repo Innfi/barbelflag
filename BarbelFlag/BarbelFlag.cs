@@ -69,7 +69,7 @@ namespace BarbelFlag
     }
 
     public class Flag
-    {
+    {        
         public enum FlagCaptureStatus
         {
             Initial = 0,
@@ -78,12 +78,18 @@ namespace BarbelFlag
         }
 
         public FlagCaptureStatus CaptureStatus { get; set; }
-
         public int OwnerTeamID { get; set; }
+        public int Score { get; protected set; }
+
 
         public Flag()
         {
             OwnerTeamID = 0;   
+        }
+
+        public void GenScore()
+        {
+            Score = 10;
         }
     }
 }
