@@ -4,23 +4,14 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-Definition:
-* game instance
-* - message queue to handle events
-* - instantiate teams
-* - instantiate flags 
-* - manage team scores / win condition
-* - system io
-* 
-* team
-* - raise score
-* - manage team members 
-* player
-* - basic stats
-* - character type
-* - skill
-* environments
-* field
+init game instance
+instantiate chracters
+assign characters to teams to limit (fixed number)
+limit handling character actions until the game starts
+start game 
+handle events (move, attack, capture)
+assign score to team when flag is captured
+finish game when score reached limit
 
 
 DONE
