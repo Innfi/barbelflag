@@ -20,12 +20,15 @@ DONE
 * - capture flags 
 * flags
 * - status: neutral / capturing  / captured
+* - generate score
+* character
+* - basic stats
 */
 
-namespace BarbelFlagTest
+namespace CoreTest
 {
     [TestClass]
-    public class BarbelFlagTester
+    public class BarbelFlagTestFarm
     {
         private GlobalSetting globalSetting;
 
@@ -139,10 +142,47 @@ namespace BarbelFlagTest
             Assert.AreEqual(flag1.Score, 10);
         }
 
-        [TestMethod]
-        public void Test24GetScoreFromFlagOverTime()
-        {
+        //[TestMethod]
+        //public void Test40CreateMessageQueue()
+        //{
+        //    MessageBase messageCaptureFlagStart = new MessageCaptureFlagStart();
+        //}
+    }
 
+    [TestClass]
+    public class CharacterTest
+    {
+        [TestMethod]
+        public void Test10CharacterMilli()
+        {
+            CharacterBase milli = new CharacterMilli();
+
+            Assert.AreEqual(milli.Health, 150);
+            Assert.AreEqual(milli.AutoRange, 20);
+        }
+
+        [TestMethod]
+        public void Test11CharacterEnnfi()
+        {
+            CharacterBase ennfi = new CharacterEnnfi();
+
+            Assert.AreEqual(ennfi.Health, 100);
+            Assert.AreEqual(ennfi.AutoRange, 30);
+        }
+
+        [TestMethod]
+        public void Test12CharacterInnfi()
+        {
+            CharacterBase innfi = new CharacterInnfi();
+
+            Assert.AreEqual(innfi.Health, 200);
+            Assert.AreEqual(innfi.AutoRange, 20);
+        }
+
+        [TestMethod]
+        public void Test20CharacterFactory()
+        {
+            //TODO: load basic character stats by factory 
         }
     }
 }

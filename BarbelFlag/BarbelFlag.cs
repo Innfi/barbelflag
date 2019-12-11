@@ -68,8 +68,53 @@ namespace BarbelFlag
         }
     }
 
+    public abstract class CharacterBase
+    {
+        public int MoveSpeed;
+        public int Health;
+        public int AutoRange;
+        public int AutoDamage;
+        public float AutoSpeed;
+    }
+
+    public class CharacterMilli : CharacterBase
+    {
+        public CharacterMilli()
+        {
+            MoveSpeed = 30;
+            Health = 150;
+            AutoRange = 20;
+            AutoDamage = 10;
+            AutoSpeed = 0.5f;
+        }
+    }
+
+    public class CharacterEnnfi : CharacterBase
+    {
+        public CharacterEnnfi()
+        {
+            MoveSpeed = 35;
+            Health = 100;
+            AutoRange = 30;
+            AutoDamage = 10;
+            AutoSpeed = 0.7f;
+        }
+    }
+
+    public class CharacterInnfi : CharacterBase
+    {
+        public CharacterInnfi()
+        {
+            MoveSpeed = 25;
+            Health = 200;
+            AutoRange = 20;
+            AutoDamage = 15;
+            AutoSpeed = 0.6f;
+        }
+    }
+
     public class Flag
-    {        
+    {
         public enum FlagCaptureStatus
         {
             Initial = 0,
@@ -84,12 +129,22 @@ namespace BarbelFlag
 
         public Flag()
         {
-            OwnerTeamID = 0;   
+            OwnerTeamID = 0;
         }
 
         public void GenScore()
         {
             Score = 10;
         }
+    }
+
+    public abstract class MessageBase
+    {
+
+    }
+
+    public class MessageCaptureFlagStart : MessageBase
+    {
+
     }
 }
