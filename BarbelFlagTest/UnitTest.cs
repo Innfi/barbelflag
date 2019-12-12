@@ -6,6 +6,7 @@ TODO
 --------------------------------------------------
 init game instance
 instantiate chracters
+instantiate flags
 assign characters to teams to limit (fixed number)
 limit handling character actions until the game starts
 start game 
@@ -183,6 +184,42 @@ namespace CoreTest
         public void Test20CharacterFactory()
         {
             //TODO: load basic character stats by factory 
+        }
+    }
+
+    [TestClass]
+    public class GameInstanceTest
+    {
+        [TestMethod]
+        public void Test1InitCharacter()
+        {
+            var game = new GameInstance();
+
+            var message = new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Innfi,
+                TeamId = 0
+            };
+
+            var answer = game.HandleMessage(message);
+
+            Assert.AreEqual(answer.MsgType, message.MsgType);
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+
+            var answerInitCharacter = (AnswerInitCharacter)answer;
+
+            Assert.AreEqual(message.UserId, answerInitCharacter.UserId);
+            Assert.AreEqual(message.TeamId, answerInitCharacter.TeamId);
+
+            var character = answerInitCharacter.Character;
+            Assert.AreEqual(character.CharType, CharacterType.Innfi);
+        }
+
+        [TestMethod]
+        public void Test1InitCharacter1DuplicateUserId()
+        {
+
         }
     }
 }

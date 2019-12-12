@@ -12,21 +12,6 @@ namespace BarbelFlag
         public int WinScore = 1000;
     }
 
-    public enum GameStatus
-    {
-        Initial = 0,
-        End = 100
-    }
-
-    public class GameInstance
-    {
-        public GameStatus Status { get; private set; }
-        public void DummyStatusChanger()
-        {
-            Status = GameStatus.End;
-        }
-    }
-
     public class Team
     {
         public class Initializer
@@ -68,51 +53,6 @@ namespace BarbelFlag
         }
     }
 
-    public abstract class CharacterBase
-    {
-        public int MoveSpeed;
-        public int Health;
-        public int AutoRange;
-        public int AutoDamage;
-        public float AutoSpeed;
-    }
-
-    public class CharacterMilli : CharacterBase
-    {
-        public CharacterMilli()
-        {
-            MoveSpeed = 30;
-            Health = 150;
-            AutoRange = 20;
-            AutoDamage = 10;
-            AutoSpeed = 0.5f;
-        }
-    }
-
-    public class CharacterEnnfi : CharacterBase
-    {
-        public CharacterEnnfi()
-        {
-            MoveSpeed = 35;
-            Health = 100;
-            AutoRange = 30;
-            AutoDamage = 10;
-            AutoSpeed = 0.7f;
-        }
-    }
-
-    public class CharacterInnfi : CharacterBase
-    {
-        public CharacterInnfi()
-        {
-            MoveSpeed = 25;
-            Health = 200;
-            AutoRange = 20;
-            AutoDamage = 15;
-            AutoSpeed = 0.6f;
-        }
-    }
-
     public class Flag
     {
         public enum FlagCaptureStatus
@@ -138,13 +78,52 @@ namespace BarbelFlag
         }
     }
 
+    public enum MessageType
+    {
+        InitCharacter = 1,
+    }
+
+    public enum ErrorCode
+    {
+        Ok = 0
+    }
+
     public abstract class MessageBase
     {
-
+        public MessageType MsgType { get; protected set; }
     }
 
     public class MessageCaptureFlagStart : MessageBase
     {
 
+    }
+
+    public class MessageInitCharacter : MessageBase
+    {
+        public MessageInitCharacter()
+        {
+            MsgType = MessageType.InitCharacter;
+        }
+        public int UserId;
+        public CharacterType CharType;
+        public int TeamId;
+    }
+
+    public abstract class AnswerBase
+    {
+        public MessageType MsgType { get; protected set; }
+        public ErrorCode Code;
+    }
+
+    public class AnswerInitCharacter : AnswerBase
+    {
+        public AnswerInitCharacter()
+        {
+            MsgType = MessageType.InitCharacter;
+        }
+
+        public int UserId;
+        public CharacterBase Character;
+        public int TeamId;
     }
 }
