@@ -219,6 +219,29 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitCharacter1DuplicateUserId()
         {
+            var game = new GameInstance();
+
+            var message = new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Innfi,
+                TeamId = 0
+            };
+
+            var answer = game.HandleMessage(message);
+
+            Assert.AreEqual(answer.MsgType, message.MsgType);
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+
+            var invalidAnswer = game.HandleMessage(message);
+
+            Assert.AreEqual(invalidAnswer.MsgType, message.MsgType);
+            Assert.AreEqual(invalidAnswer.Code, ErrorCode.UserAlreadyRegistered);
+        }
+
+        [TestMethod]
+        public void Test1InitCharacter1DuplicateUserIdOtherTeam()
+        {
 
         }
     }

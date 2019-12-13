@@ -85,7 +85,8 @@ namespace BarbelFlag
 
     public enum ErrorCode
     {
-        Ok = 0
+        Ok = 0,
+        UserAlreadyRegistered = 11,
     }
 
     public abstract class MessageBase
