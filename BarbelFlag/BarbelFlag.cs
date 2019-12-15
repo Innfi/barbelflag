@@ -22,15 +22,18 @@ namespace BarbelFlag
         }
 
         public int TeamID { get; protected set; }
+        public Dictionary<int, CharacterBase> Members { get; protected set; }
 
         private GlobalSetting globalSetting;
         private GameInstance gameInstance;
+
 
         public Team(Initializer initializer)
         {
             globalSetting = initializer.Setting;
             gameInstance = initializer.Game;
             TeamID = initializer.TeamID;
+            Members = new Dictionary<int, CharacterBase>();
         }
 
         public int Score { get; private set; }
@@ -45,6 +48,12 @@ namespace BarbelFlag
             flag.OwnerTeamID = TeamID;
             flag.CaptureStatus = Flag.FlagCaptureStatus.Captured;
         }
+
+        public void AddMember(int userId, CharacterBase character)
+        {
+            Members.Add(userId, character);
+        }
+
 
         public void RaiseScoreDummy()
         {

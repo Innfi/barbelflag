@@ -17,13 +17,22 @@ namespace BarbelFlag
         public GameStatus Status { get; private set; }
 
         protected Dictionary<int, CharacterBase> characters;
+        protected Team team1;
+        protected Team team2;
 
 
         public GameInstance()
         {
             characters = new Dictionary<int, CharacterBase>();
+            team1 = new Team(new Team.Initializer
+            {
+                TeamID = 1
+            });
+            team2 = new Team(new Team.Initializer
+            {
+                TeamID = 2
+            });
         }
-
 
         public void DummyStatusChanger()
         {
@@ -59,23 +68,35 @@ namespace BarbelFlag
             character = new CharacterInnfi();
             characters.Add(msgInitCharacter.UserId, character);
 
+            if (msgInitCharacter.TeamId == 1)
+            {
+                team1.AddMember(msgInitCharacter.UserId, character);
+            }
+            else
+            {
+                team2.AddMember(msgInitCharacter.UserId, character);
+            }
+
             return new AnswerInitCharacter
             {
                 Code = ErrorCode.Ok,
                 UserId = 1,
                 Character = character,
-                TeamId = 0,
+                TeamId = msgInitCharacter.TeamId,
             };
         }
 
         protected AnswerBase HandleLoadTeam(MessageBase message)
         {
-            //var msgLoadTeam = (MessageLoadTeam)message;
+            var msgLoadTeam = (MessageLoadTeam)message;
+
+            var members = team1.Members;
+            if (msgLoadTeam.TeamId != 1) members = team2.Members;
 
             return new AnswerLoadTeam
             {
                 Code = ErrorCode.Ok,
-                TeamMembers = characters
+                TeamMembers = members
             };
         }
     }
