@@ -36,6 +36,10 @@ namespace BarbelFlag
             {
                 return HandleInitCharacter(message);
             }
+            else if (message.MsgType == MessageType.LoadTeam)
+            {
+                return HandleLoadTeam(message);
+            }
 
             return new AnswerInitCharacter();
         }
@@ -61,6 +65,17 @@ namespace BarbelFlag
                 UserId = 1,
                 Character = character,
                 TeamId = 0,
+            };
+        }
+
+        protected AnswerBase HandleLoadTeam(MessageBase message)
+        {
+            //var msgLoadTeam = (MessageLoadTeam)message;
+
+            return new AnswerLoadTeam
+            {
+                Code = ErrorCode.Ok,
+                TeamMembers = characters
             };
         }
     }

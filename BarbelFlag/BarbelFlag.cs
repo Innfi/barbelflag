@@ -81,6 +81,7 @@ namespace BarbelFlag
     public enum MessageType
     {
         InitCharacter = 1,
+        LoadTeam = 2,
     }
 
     public enum ErrorCode
@@ -99,32 +100,9 @@ namespace BarbelFlag
 
     }
 
-    public class MessageInitCharacter : MessageBase
-    {
-        public MessageInitCharacter()
-        {
-            MsgType = MessageType.InitCharacter;
-        }
-        public int UserId;
-        public CharacterType CharType;
-        public int TeamId;
-    }
-
     public abstract class AnswerBase
     {
         public MessageType MsgType { get; protected set; }
         public ErrorCode Code;
-    }
-
-    public class AnswerInitCharacter : AnswerBase
-    {
-        public AnswerInitCharacter()
-        {
-            MsgType = MessageType.InitCharacter;
-        }
-
-        public int UserId;
-        public CharacterBase Character;
-        public int TeamId;
-    }
+    } 
 }

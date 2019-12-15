@@ -5,7 +5,7 @@ using BarbelFlag;
 TODO
 --------------------------------------------------
 init game instance
-instantiate chracters
+instantiate chracters with teams
 instantiate flags
 assign characters to teams to limit (fixed number)
 limit handling character actions until the game starts
@@ -190,11 +190,17 @@ namespace CoreTest
     [TestClass]
     public class GameInstanceTest
     {
+        protected GameInstance game;
+
+        [TestInitialize]
+        public void SetUp()
+        {
+            game = new GameInstance();
+        }
+
         [TestMethod]
         public void Test1InitCharacter()
         {
-            var game = new GameInstance();
-
             var message = new MessageInitCharacter
             {
                 UserId = 1,
@@ -219,8 +225,6 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitCharacter1DuplicateUserId()
         {
-            var game = new GameInstance();
-
             var message = new MessageInitCharacter
             {
                 UserId = 1,
@@ -240,9 +244,106 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test1InitCharacter1DuplicateUserIdOtherTeam()
+        public void Test1InitCharacter3CheckTeam()
         {
+            var teamId = 123;
 
+            var message1 = new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Innfi,
+                TeamId = teamId
+            };
+            var message2 = new MessageInitCharacter
+            {
+                UserId = 2,
+                CharType = CharacterType.Innfi,
+                TeamId = teamId
+            };
+
+            game.HandleMessage(message1);
+            game.HandleMessage(message2);
+
+            var messageLoadTeam = new MessageLoadTeam
+            {
+                TeamId = teamId
+            };
+
+            var answer = game.HandleMessage(messageLoadTeam);
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+            Assert.AreEqual(answer.MsgType, MessageType.LoadTeam);
+
+            var answerLoadTeam = (AnswerLoadTeam)answer;
+            var teamMembers = answerLoadTeam.TeamMembers;
+
+            var player1Result = teamMembers.TryGetValue(message1.UserId, 
+                out var character1);
+            Assert.AreEqual(player1Result, true);
+            Assert.AreEqual(character1.CharType, message1.CharType);
+
+            var player2Result = teamMembers.TryGetValue(message2.UserId,
+                out var character2);
+            Assert.AreEqual(player2Result, true);
+            Assert.AreEqual(character2.CharType, message1.CharType);
         }
+
+        [TestMethod]
+        public void Test1InitCharacter4CheckDifferentTeam()
+        {
+            var team1Id = 123;
+            var message1 = new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Innfi,
+                TeamId = team1Id
+            };
+
+            var team2Id = 422;
+            var message2 = new MessageInitCharacter
+            {
+                UserId = 2,
+                CharType = CharacterType.Innfi,
+                TeamId = team2Id
+            };
+
+            game.HandleMessage(message1);
+            game.HandleMessage(message2);
+
+            var answer = game.HandleMessage(new MessageLoadTeam
+            {
+                TeamId = team1Id
+            });
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+            Assert.AreEqual(answer.MsgType, MessageType.LoadTeam);
+
+            var answerLoadTeam = (AnswerLoadTeam)answer;
+            var teamMembers = answerLoadTeam.TeamMembers;
+
+            var player1Result = teamMembers.TryGetValue(message1.UserId,
+                out var character1);
+            Assert.AreEqual(player1Result, true);
+            Assert.AreEqual(character1.CharType, message1.CharType);
+            Assert.AreEqual(teamMembers.TryGetValue(message2.UserId,
+                out var character), false);
+
+            var answer2 = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                TeamId = team2Id
+            });
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+            Assert.AreEqual(answer.MsgType, MessageType.LoadTeam);
+
+            var teamMembers2 = answer2.TeamMembers;
+            var player2Result = teamMembers.TryGetValue(message2.UserId,
+                out var character2);
+            Assert.AreEqual(player2Result, true);
+            Assert.AreEqual(character2.CharType, message2.CharType);
+        }
+
+        //[TestMethod]
+        //public void Test1InitCharacter3DuplicateUserIdOtherTeam()
+        //{
+
+        //}
     }
 }

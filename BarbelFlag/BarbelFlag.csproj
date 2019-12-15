@@ -61,7 +61,9 @@
   <ItemGroup>
     <Compile Include="BarbelFlag.cs" />
     <Compile Include="Characters.cs" />
+    <Compile Include="Actions\LoadTeam.cs" />
     <Compile Include="GameInstance.cs" />
+    <Compile Include="Actions\InitCharacter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
