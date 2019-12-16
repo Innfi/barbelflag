@@ -1,10 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
 
 /*
 TODO
 --------------------------------------------------
-refactoring: fix team ids to 2 only. no need to variable ids
+refactoring: default setting for GlobalSetting members
 
 init game instance
 instantiate chracters with teams
@@ -26,6 +27,7 @@ DONE
 * - generate score
 * character
 * - basic stats
+* refactoring: fix team ids to 2 only. no need to variable ids
 */
 
 namespace CoreTest
@@ -74,7 +76,7 @@ namespace CoreTest
         {
             var flag = new Flag();
 
-            Assert.AreEqual(flag.OwnerTeamID, 0);
+            Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
             Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Initial);
         }
 
@@ -82,34 +84,31 @@ namespace CoreTest
         public void Test21TeamCaptureAFlag()
         {
             var dummyFlag = new Flag();
-            var dummyTeamID = 123;
             var dummyTeam = new Team(new Team.Initializer
             {
-                TeamID = dummyTeamID
+                Faction = TeamFaction.Ciri
             });
 
             dummyTeam.StartCapture(dummyFlag);
-            Assert.AreEqual(dummyFlag.OwnerTeamID, 0);
+            Assert.AreEqual(dummyFlag.OwnerTeamFaction, TeamFaction.None);
             Assert.AreEqual(dummyFlag.CaptureStatus, Flag.FlagCaptureStatus.Capturing);
 
             dummyTeam.DoneCapture(dummyFlag);
-            Assert.AreEqual(dummyFlag.OwnerTeamID, dummyTeamID);
+            Assert.AreEqual(dummyFlag.OwnerTeamFaction, dummyTeam.Faction);
             Assert.AreEqual(dummyFlag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
         }
 
         [TestMethod]
         public void Test22DifferentTeamsCaptureFlags()
         {
-            var teamID1 = 123;
             var team1 = new Team(new Team.Initializer
             {
-                TeamID = teamID1
+                Faction = TeamFaction.Ciri
             });
 
-            var teamID2 = 345;
             var team2 = new Team(new Team.Initializer
             {
-                TeamID = teamID2
+                Faction = TeamFaction.Eredin
             });
 
             var flag1 = new Flag();
@@ -121,18 +120,17 @@ namespace CoreTest
             team2.StartCapture(flag2);
             team2.DoneCapture(flag2);
 
-            Assert.AreEqual(flag1.OwnerTeamID, team1.TeamID);
-            Assert.AreEqual(flag2.OwnerTeamID, team2.TeamID);
+            Assert.AreEqual(flag1.OwnerTeamFaction, team1.Faction);
+            Assert.AreEqual(flag2.OwnerTeamFaction, team2.Faction);
         }
 
         [TestMethod]
         public void Test23GetScoreFromFlag()
         {
             var flag1 = new Flag();
-            var teamID1 = 123;
             var team1 = new Team(new Team.Initializer
             {
-                TeamID = teamID1
+                Faction = TeamFaction.Eredin
             });
 
             team1.StartCapture(flag1);
@@ -207,7 +205,7 @@ namespace CoreTest
             {
                 UserId = 1,
                 CharType = CharacterType.Innfi,
-                TeamId = 0
+                Faction = TeamFaction.Ciri
             };
 
             var answer = game.HandleMessage(message);
@@ -218,7 +216,7 @@ namespace CoreTest
             var answerInitCharacter = (AnswerInitCharacter)answer;
 
             Assert.AreEqual(message.UserId, answerInitCharacter.UserId);
-            Assert.AreEqual(message.TeamId, answerInitCharacter.TeamId);
+            Assert.AreEqual(message.Faction, answerInitCharacter.Faction);
 
             var character = answerInitCharacter.Character;
             Assert.AreEqual(character.CharType, CharacterType.Innfi);
@@ -231,7 +229,7 @@ namespace CoreTest
             {
                 UserId = 1,
                 CharType = CharacterType.Innfi,
-                TeamId = 0
+                Faction = TeamFaction.Eredin
             };
 
             var answer = game.HandleMessage(message);
@@ -248,27 +246,24 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitCharacter2CheckTeam()
         {
-            var teamId = 1;
-
             var message1 = new MessageInitCharacter
             {
                 UserId = 1,
                 CharType = CharacterType.Innfi,
-                TeamId = teamId
+                Faction = TeamFaction.Ciri
             };
             var message2 = new MessageInitCharacter
             {
                 UserId = 2,
                 CharType = CharacterType.Innfi,
-                TeamId = teamId
+                Faction = TeamFaction.Ciri
             };
-
             game.HandleMessage(message1);
             game.HandleMessage(message2);
 
             var answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
             {
-                TeamId = teamId
+                Faction = TeamFaction.Ciri
             });
             Assert.AreEqual(answerLoadTeam.Code, ErrorCode.Ok);
             Assert.AreEqual(answerLoadTeam.MsgType, MessageType.LoadTeam);
@@ -282,16 +277,63 @@ namespace CoreTest
 
             var emptyAnswer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
             {
-                TeamId = 2
+                Faction = TeamFaction.Eredin
             });
             Assert.AreEqual(emptyAnswer.TeamMembers.ContainsKey(message1.UserId), false);
             Assert.AreEqual(emptyAnswer.TeamMembers.ContainsKey(message2.UserId), false);
         }
 
-        //[TestMethod]
-        //public void Test1Initcharacter3TeamMemberFull()
-        //{
+        [TestMethod]
+        public void Test1InitCharacter3TeamMemberFull()
+        {
+            var globalSetting = new GlobalSetting
+            {
+                MemberCount = 5
+            };
 
-        //}
+            var otherGame = new GameInstance(globalSetting);
+
+            var faction = TeamFaction.Ciri;
+            var messages = GenerateDummyMsgInitChar(faction);
+
+            foreach (var message in messages)
+            {
+                var answer = otherGame.HandleMessage(message);
+                Assert.AreEqual(answer.Code, ErrorCode.Ok);
+            }
+
+            var invalidMessage = new MessageInitCharacter
+            {
+                UserId = 99,
+                CharType = CharacterType.Innfi,
+                Faction = faction
+            };
+
+            var invalidAnswer = otherGame.HandleMessage(invalidMessage);
+            Assert.AreEqual(invalidAnswer.Code, ErrorCode.TeamMemberCountLimit);
+        }
+
+        protected List<MessageInitCharacter> GenerateDummyMsgInitChar(TeamFaction faction)
+        {
+            var messages = new List<MessageInitCharacter>();
+
+            for (int i = 1; i < 6; i++)
+            {
+                messages.Add(new MessageInitCharacter
+                {
+                    UserId = i,
+                    CharType = CharacterType.Ennfi,
+                    Faction = faction
+                });
+            }
+
+            return messages;
+        }
+
+        [TestMethod]
+        public void Test1InitFlags1Instantiate()
+        {
+
+        }
     }
 }

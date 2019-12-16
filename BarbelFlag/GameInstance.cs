@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace BarbelFlag
 {
+    public class GlobalSetting
+    {
+        public int WinScore = 1000;
+        public int MemberCount = 3;
+    }
+
     public enum GameStatus
     {
         Initial = 0,
@@ -15,22 +21,40 @@ namespace BarbelFlag
     public class GameInstance
     {
         public GameStatus Status { get; private set; }
-
+        protected GlobalSetting globalSetting;
         protected Dictionary<int, CharacterBase> characters;
-        protected Team team1;
-        protected Team team2;
+        protected Team teamCiri;
+        protected Team teamEredin;
 
 
         public GameInstance()
         {
+            this.globalSetting = new GlobalSetting
+            {
+                MemberCount = 100
+            };
             characters = new Dictionary<int, CharacterBase>();
-            team1 = new Team(new Team.Initializer
+            teamCiri = new Team(new Team.Initializer
             {
-                TeamID = 1
+                Faction = TeamFaction.Ciri
             });
-            team2 = new Team(new Team.Initializer
+            teamEredin = new Team(new Team.Initializer
             {
-                TeamID = 2
+                Faction = TeamFaction.Eredin
+            });
+        }
+
+        public GameInstance(GlobalSetting globalSetting)
+        {
+            this.globalSetting = globalSetting;
+            characters = new Dictionary<int, CharacterBase>();
+            teamCiri = new Team(new Team.Initializer
+            {
+                Faction = TeamFaction.Ciri
+            });
+            teamEredin = new Team(new Team.Initializer
+            {
+                Faction = TeamFaction.Eredin
             });
         }
 
@@ -65,24 +89,42 @@ namespace BarbelFlag
                 };
             }
 
-            character = new CharacterInnfi();
-            characters.Add(msgInitCharacter.UserId, character);
+            character = new CharacterInnfi();        
 
-            if (msgInitCharacter.TeamId == 1)
+            if (msgInitCharacter.Faction == TeamFaction.Ciri)
             {
-                team1.AddMember(msgInitCharacter.UserId, character);
+                if (teamCiri.Members.Count >= globalSetting.MemberCount)
+                {
+                    return new AnswerInitCharacter
+                    {
+                        Code = ErrorCode.TeamMemberCountLimit,
+                        UserId = msgInitCharacter.UserId
+                    };
+                }
+                teamCiri.AddMember(msgInitCharacter.UserId, character);
             }
             else
             {
-                team2.AddMember(msgInitCharacter.UserId, character);
+                if (teamEredin.Members.Count >= globalSetting.MemberCount)
+                {
+                    return new AnswerInitCharacter
+                    {
+                        Code = ErrorCode.TeamMemberCountLimit,
+                        UserId = msgInitCharacter.UserId
+                    };
+                }
+                teamEredin.AddMember(msgInitCharacter.UserId, character);
             }
+
+            characters.Add(msgInitCharacter.UserId, character);
+
 
             return new AnswerInitCharacter
             {
                 Code = ErrorCode.Ok,
                 UserId = 1,
                 Character = character,
-                TeamId = msgInitCharacter.TeamId,
+                Faction = msgInitCharacter.Faction,
             };
         }
 
@@ -90,8 +132,8 @@ namespace BarbelFlag
         {
             var msgLoadTeam = (MessageLoadTeam)message;
 
-            var members = team1.Members;
-            if (msgLoadTeam.TeamId != 1) members = team2.Members;
+            var members = teamCiri.Members;
+            if (msgLoadTeam.Faction != TeamFaction.Ciri) members = teamEredin.Members;
 
             return new AnswerLoadTeam
             {

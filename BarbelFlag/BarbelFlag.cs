@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace BarbelFlag
 {
-    public class GlobalSetting
+    public enum TeamFaction
     {
-        public int WinScore = 1000;
-    }
+        None = 0,
+        Ciri = 1,
+        Eredin = 2
+    };
 
     public class Team
     {
@@ -18,10 +20,10 @@ namespace BarbelFlag
         {
             public GlobalSetting Setting;
             public GameInstance Game;
-            public int TeamID;
+            public TeamFaction Faction;
         }
 
-        public int TeamID { get; protected set; }
+        public TeamFaction Faction { get; protected set; }
         public Dictionary<int, CharacterBase> Members { get; protected set; }
 
         private GlobalSetting globalSetting;
@@ -32,7 +34,7 @@ namespace BarbelFlag
         {
             globalSetting = initializer.Setting;
             gameInstance = initializer.Game;
-            TeamID = initializer.TeamID;
+            Faction = initializer.Faction;
             Members = new Dictionary<int, CharacterBase>();
         }
 
@@ -45,7 +47,7 @@ namespace BarbelFlag
 
         public void DoneCapture(Flag flag)
         {
-            flag.OwnerTeamID = TeamID;
+            flag.OwnerTeamFaction = Faction;
             flag.CaptureStatus = Flag.FlagCaptureStatus.Captured;
         }
 
@@ -72,13 +74,13 @@ namespace BarbelFlag
         }
 
         public FlagCaptureStatus CaptureStatus { get; set; }
-        public int OwnerTeamID { get; set; }
+        public TeamFaction OwnerTeamFaction { get; set; }
         public int Score { get; protected set; }
 
 
         public Flag()
         {
-            OwnerTeamID = 0;
+            OwnerTeamFaction = TeamFaction.None;
         }
 
         public void GenScore()
@@ -97,6 +99,7 @@ namespace BarbelFlag
     {
         Ok = 0,
         UserAlreadyRegistered = 11,
+        TeamMemberCountLimit = 12,
     }
 
     public abstract class MessageBase

@@ -14,7 +14,7 @@ namespace BarbelFlag
         }
         public int UserId;
         public CharacterType CharType;
-        public int TeamId;
+        public TeamFaction Faction;
     }
 
     public class AnswerInitCharacter : AnswerBase
@@ -26,6 +26,6 @@ namespace BarbelFlag
 
         public int UserId;
         public CharacterBase Character;
-        public int TeamId;
+        public TeamFaction Faction;
     }
 }

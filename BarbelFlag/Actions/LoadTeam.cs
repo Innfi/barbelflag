@@ -10,7 +10,7 @@ namespace BarbelFlag
             MsgType = MessageType.LoadTeam;
         }
 
-        public int TeamId;
+        public TeamFaction Faction;
     }
 
     public class AnswerLoadTeam : AnswerBase
