@@ -333,7 +333,22 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitFlags1Instantiate()
         {
+            var answer = game.HandleMessage(new MessageGetFlagsStatus());
+            Assert.AreEqual(answer.MsgType, MessageType.GetFlagsStatus);
 
+            var answerFlagsStatus = (AnswerGetFlagsStatus)answer;
+            Assert.AreEqual(answerFlagsStatus.Flags != null, true);
+
+            foreach (var flag in answerFlagsStatus.Flags)
+            {
+                Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
+            }
         }
+
+        //[TestMethod]
+        //public void Test1InitFlags2IsCorrectStatus()
+        //{
+
+        //}
     }
 }

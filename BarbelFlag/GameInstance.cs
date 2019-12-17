@@ -10,6 +10,7 @@ namespace BarbelFlag
     {
         public int WinScore = 1000;
         public int MemberCount = 3;
+        public int FlagCount = 5;
     }
 
     public enum GameStatus
@@ -25,15 +26,32 @@ namespace BarbelFlag
         protected Dictionary<int, CharacterBase> characters;
         protected Team teamCiri;
         protected Team teamEredin;
+        protected List<Flag> Flags;
 
 
         public GameInstance()
+        {
+            LoadGlobalSetting();
+            InitCharacters();
+            InitTeams();
+            InitFlags();
+        }
+
+        protected void LoadGlobalSetting()
         {
             this.globalSetting = new GlobalSetting
             {
                 MemberCount = 100
             };
+        }
+
+        protected void InitCharacters()
+        {
             characters = new Dictionary<int, CharacterBase>();
+        }
+
+        protected void InitTeams()
+        {
             teamCiri = new Team(new Team.Initializer
             {
                 Faction = TeamFaction.Ciri
@@ -44,18 +62,22 @@ namespace BarbelFlag
             });
         }
 
+        protected void InitFlags()
+        {
+            Flags = new List<Flag>();
+            for (int i = 0; i < globalSetting.FlagCount; i++)
+            {
+                Flags.Add(new Flag());
+            }
+        }
+
         public GameInstance(GlobalSetting globalSetting)
         {
             this.globalSetting = globalSetting;
-            characters = new Dictionary<int, CharacterBase>();
-            teamCiri = new Team(new Team.Initializer
-            {
-                Faction = TeamFaction.Ciri
-            });
-            teamEredin = new Team(new Team.Initializer
-            {
-                Faction = TeamFaction.Eredin
-            });
+
+            InitCharacters();
+            InitTeams();
+            InitFlags();
         }
 
         public void DummyStatusChanger()
@@ -65,16 +87,17 @@ namespace BarbelFlag
 
         public AnswerBase HandleMessage(MessageBase message)
         {
-            if (message.MsgType == MessageType.InitCharacter)
+            switch (message.MsgType)
             {
-                return HandleInitCharacter(message);
+                case MessageType.InitCharacter:
+                    return HandleInitCharacter(message);
+                case MessageType.LoadTeam:
+                    return HandleLoadTeam(message);
+                case MessageType.GetFlagsStatus:
+                    return HandleGetFlagsStatus(message);
+                default:
+                    return new AnswerInitCharacter();
             }
-            else if (message.MsgType == MessageType.LoadTeam)
-            {
-                return HandleLoadTeam(message);
-            }
-
-            return new AnswerInitCharacter();
         }
 
         protected AnswerBase HandleInitCharacter(MessageBase message)
@@ -139,6 +162,15 @@ namespace BarbelFlag
             {
                 Code = ErrorCode.Ok,
                 TeamMembers = members
+            };
+        }
+
+        protected AnswerBase HandleGetFlagsStatus(MessageBase message)
+        {
+            return new AnswerGetFlagsStatus
+            {
+                Code = ErrorCode.Ok,
+                Flags = this.Flags
             };
         }
     }

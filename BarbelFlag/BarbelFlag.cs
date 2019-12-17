@@ -91,8 +91,10 @@ namespace BarbelFlag
 
     public enum MessageType
     {
+        //None = 0,
         InitCharacter = 1,
         LoadTeam = 2,
+        GetFlagsStatus = 3,
     }
 
     public enum ErrorCode
@@ -100,6 +102,7 @@ namespace BarbelFlag
         Ok = 0,
         UserAlreadyRegistered = 11,
         TeamMemberCountLimit = 12,
+        //InvalidMessageType = 999
     }
 
     public abstract class MessageBase
@@ -116,5 +119,5 @@ namespace BarbelFlag
     {
         public MessageType MsgType { get; protected set; }
         public ErrorCode Code;
-    } 
+    }
 }
