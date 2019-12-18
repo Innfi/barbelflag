@@ -73,13 +73,15 @@ namespace BarbelFlag
             Captured = 10
         }
 
+        public int FlagId { get; protected set; }
         public FlagCaptureStatus CaptureStatus { get; set; }
         public TeamFaction OwnerTeamFaction { get; set; }
         public int Score { get; protected set; }
 
 
-        public Flag()
+        public Flag(int flagId)
         {
+            FlagId = flagId;
             OwnerTeamFaction = TeamFaction.None;
         }
 
@@ -95,6 +97,7 @@ namespace BarbelFlag
         InitCharacter = 1,
         LoadTeam = 2,
         GetFlagsStatus = 3,
+        StartCapture = 4,
     }
 
     public enum ErrorCode

@@ -21,12 +21,13 @@ namespace BarbelFlag
 
     public class GameInstance
     {
-        public GameStatus Status { get; private set; }
+        public GameStatus Status { get; private set; }        
+        protected List<Flag> Flags;
+
         protected GlobalSetting globalSetting;
         protected Dictionary<int, CharacterBase> characters;
         protected Team teamCiri;
         protected Team teamEredin;
-        protected List<Flag> Flags;
 
 
         public GameInstance()
@@ -67,7 +68,7 @@ namespace BarbelFlag
             Flags = new List<Flag>();
             for (int i = 0; i < globalSetting.FlagCount; i++)
             {
-                Flags.Add(new Flag());
+                Flags.Add(new Flag(i));
             }
         }
 
@@ -95,6 +96,8 @@ namespace BarbelFlag
                     return HandleLoadTeam(message);
                 case MessageType.GetFlagsStatus:
                     return HandleGetFlagsStatus(message);
+                case MessageType.StartCapture:
+                    return HandleStartCapture(message);
                 default:
                     return new AnswerInitCharacter();
             }
@@ -171,6 +174,21 @@ namespace BarbelFlag
             {
                 Code = ErrorCode.Ok,
                 Flags = this.Flags
+            };
+        }
+
+        protected AnswerBase HandleStartCapture(MessageBase message)
+        {
+            var msgStartCapture = (MessageStartCapture)message;
+            var flagId = msgStartCapture.FlagId;
+
+            var flag = Flags.Find(x => x.FlagId == flagId);
+
+            flag.CaptureStatus = Flag.FlagCaptureStatus.Capturing;
+
+            return new AnswerStartCapture
+            {
+                Code = ErrorCode.Ok
             };
         }
     }

@@ -5,29 +5,29 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-refactoring: default setting for GlobalSetting members
+flag id
+refactoring: capture flag by HandleMessage
+refactoring: HandleMessage to message queue
+limit handling character actions until the game starts
+start game 
+assign score to team when flag is captured
+finish game when score reached limit
 
+DONE
+--------------------------------------------------
+team
+- capture flags 
+flags
+- status: neutral / capturing  / captured
+- generate score
+character
+- basic stats
+refactoring: fix team ids to 2 only. no need to variable ids
 init game instance
 instantiate chracters with teams
 instantiate flags
 assign characters to teams to limit (fixed number)
-limit handling character actions until the game starts
-start game 
 handle events (move, attack, capture)
-assign score to team when flag is captured
-finish game when score reached limit
-
-
-DONE
---------------------------------------------------
-* team
-* - capture flags 
-* flags
-* - status: neutral / capturing  / captured
-* - generate score
-* character
-* - basic stats
-* refactoring: fix team ids to 2 only. no need to variable ids
 */
 
 namespace CoreTest
@@ -74,7 +74,7 @@ namespace CoreTest
         [TestMethod]
         public void Test20InitFlag()
         {
-            var flag = new Flag();
+            var flag = new Flag(0);
 
             Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
             Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Initial);
@@ -83,7 +83,7 @@ namespace CoreTest
         [TestMethod]
         public void Test21TeamCaptureAFlag()
         {
-            var dummyFlag = new Flag();
+            var dummyFlag = new Flag(0);
             var dummyTeam = new Team(new Team.Initializer
             {
                 Faction = TeamFaction.Ciri
@@ -111,8 +111,8 @@ namespace CoreTest
                 Faction = TeamFaction.Eredin
             });
 
-            var flag1 = new Flag();
-            var flag2 = new Flag();
+            var flag1 = new Flag(1);
+            var flag2 = new Flag(2);
 
             team1.StartCapture(flag1);
             team1.DoneCapture(flag1);
@@ -127,7 +127,7 @@ namespace CoreTest
         [TestMethod]
         public void Test23GetScoreFromFlag()
         {
-            var flag1 = new Flag();
+            var flag1 = new Flag(1);
             var team1 = new Team(new Team.Initializer
             {
                 Faction = TeamFaction.Eredin
@@ -345,8 +345,36 @@ namespace CoreTest
             }
         }
 
+        [TestMethod]
+        public void Test2CaptureFlagByHandleMessage()
+        {
+            var flags = LoadFlags();
+            var targetFlag = flags[0];
+
+            var answer = game.HandleMessage(new MessageStartCapture
+            {
+                FlagId = targetFlag.FlagId
+            });
+
+            
+
+            Assert.AreEqual(answer.MsgType, MessageType.StartCapture);
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+
+            var resultFlags = LoadFlags();
+            Assert.AreEqual(resultFlags[0].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+            //TODO: get AnswerDoneCapture with timer
+        }
+
+        protected List<Flag> LoadFlags()
+        {
+            var answer = (AnswerGetFlagsStatus)game.HandleMessage(new MessageGetFlagsStatus());
+
+            return answer.Flags;
+        }
+
         //[TestMethod]
-        //public void Test1InitFlags2IsCorrectStatus()
+        //public void Test2InitFlags3IsCorrectStatus()
         //{
 
         //}
