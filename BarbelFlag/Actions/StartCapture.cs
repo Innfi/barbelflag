@@ -9,6 +9,7 @@ namespace BarbelFlag
     public class MessageStartCapture : MessageBase
     {
         public int FlagId;
+        public TeamFaction Faction;
 
         public MessageStartCapture()
         {

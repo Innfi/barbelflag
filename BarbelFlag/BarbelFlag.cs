@@ -113,11 +113,6 @@ namespace BarbelFlag
         public MessageType MsgType { get; protected set; }
     }
 
-    public class MessageCaptureFlagStart : MessageBase
-    {
-
-    }
-
     public abstract class AnswerBase
     {
         public MessageType MsgType { get; protected set; }

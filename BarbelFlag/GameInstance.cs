@@ -32,6 +32,11 @@ namespace BarbelFlag
 
         public GameInstance()
         {
+            Reset();
+        }
+
+        public void Reset()
+        {
             LoadGlobalSetting();
             InitCharacters();
             InitTeams();
@@ -185,6 +190,7 @@ namespace BarbelFlag
             var flag = Flags.Find(x => x.FlagId == flagId);
 
             flag.CaptureStatus = Flag.FlagCaptureStatus.Capturing;
+            flag.OwnerTeamFaction = msgStartCapture.Faction;
 
             return new AnswerStartCapture
             {

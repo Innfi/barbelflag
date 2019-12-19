@@ -5,7 +5,6 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-flag id
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 limit handling character actions until the game starts
@@ -20,6 +19,7 @@ team
 flags
 - status: neutral / capturing  / captured
 - generate score
+- flag id
 character
 - basic stats
 refactoring: fix team ids to 2 only. no need to variable ids
@@ -348,6 +348,7 @@ namespace CoreTest
         [TestMethod]
         public void Test2CaptureFlagByHandleMessage()
         {
+            game.Reset();
             var flags = LoadFlags();
             var targetFlag = flags[0];
 
@@ -355,8 +356,6 @@ namespace CoreTest
             {
                 FlagId = targetFlag.FlagId
             });
-
-            
 
             Assert.AreEqual(answer.MsgType, MessageType.StartCapture);
             Assert.AreEqual(answer.Code, ErrorCode.Ok);
@@ -373,10 +372,58 @@ namespace CoreTest
             return answer.Flags;
         }
 
-        //[TestMethod]
-        //public void Test2InitFlags3IsCorrectStatus()
-        //{
+        [TestMethod]
+        public void Test2InitFlags3OwnerTeamID()
+        {
+            game.Reset();
 
-        //}
+            var initCharFromCiri = new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Ennfi,
+                Faction = TeamFaction.Ciri
+            };
+            var initCharFromEredin = new MessageInitCharacter
+            {
+                UserId = 2,
+                CharType = CharacterType.Milli,
+                Faction = TeamFaction.Eredin
+            };
+
+            game.HandleMessage(initCharFromCiri);
+            game.HandleMessage(initCharFromEredin);
+
+            var flags = LoadFlags();
+            var flagIndexCiri = 1;
+            var flagIndexEredin = 4;
+
+            game.HandleMessage(new MessageStartCapture
+            {
+                FlagId = flags[flagIndexCiri].FlagId,
+                Faction = initCharFromCiri.Faction
+            });
+            game.HandleMessage(new MessageStartCapture
+            {
+                FlagId = flags[flagIndexEredin].FlagId,
+                Faction = initCharFromEredin.Faction
+            });
+
+            var resultflags = LoadFlags();
+            Assert.AreEqual(
+                resultflags[flagIndexCiri].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+            Assert.AreEqual(
+                resultflags[flagIndexCiri].OwnerTeamFaction, TeamFaction.Ciri);
+
+            Assert.AreEqual(
+                resultflags[flagIndexEredin].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+            Assert.AreEqual(
+                resultflags[flagIndexEredin].OwnerTeamFaction, TeamFaction.Eredin);
+        }
+
+        [TestMethod]
+        public void Test3SendAnswerByMessageQueue()
+        {
+
+        }
     }
 }
