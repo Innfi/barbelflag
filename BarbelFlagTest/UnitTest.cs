@@ -5,6 +5,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
+generate score by flag ticks
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 limit handling character actions until the game starts
@@ -74,7 +75,7 @@ namespace CoreTest
         [TestMethod]
         public void Test20InitFlag()
         {
-            var flag = new Flag(0);
+            var flag = new Flag(0, 100);
 
             Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
             Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Initial);
@@ -83,17 +84,17 @@ namespace CoreTest
         [TestMethod]
         public void Test21TeamCaptureAFlag()
         {
-            var dummyFlag = new Flag(0);
+            var dummyFlag = new Flag(0, 6000);
             var dummyTeam = new Team(new Team.Initializer
             {
                 Faction = TeamFaction.Ciri
             });
 
-            dummyTeam.StartCapture(dummyFlag);
-            Assert.AreEqual(dummyFlag.OwnerTeamFaction, TeamFaction.None);
+            dummyFlag.StartCapture(dummyTeam.Faction);
+            Assert.AreEqual(dummyFlag.OwnerTeamFaction, dummyTeam.Faction);
             Assert.AreEqual(dummyFlag.CaptureStatus, Flag.FlagCaptureStatus.Capturing);
 
-            dummyTeam.DoneCapture(dummyFlag);
+            dummyFlag.Tick();
             Assert.AreEqual(dummyFlag.OwnerTeamFaction, dummyTeam.Faction);
             Assert.AreEqual(dummyFlag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
         }
@@ -111,14 +112,14 @@ namespace CoreTest
                 Faction = TeamFaction.Eredin
             });
 
-            var flag1 = new Flag(1);
-            var flag2 = new Flag(2);
+            var flag1 = new Flag(1, 6000);
+            var flag2 = new Flag(2, 6000);
 
-            team1.StartCapture(flag1);
-            team1.DoneCapture(flag1);
+            flag1.StartCapture(team1.Faction);
+            flag2.StartCapture(team2.Faction);
 
-            team2.StartCapture(flag2);
-            team2.DoneCapture(flag2);
+            flag1.Tick();
+            flag2.Tick();
 
             Assert.AreEqual(flag1.OwnerTeamFaction, team1.Faction);
             Assert.AreEqual(flag2.OwnerTeamFaction, team2.Faction);
@@ -127,15 +128,16 @@ namespace CoreTest
         [TestMethod]
         public void Test23GetScoreFromFlag()
         {
-            var flag1 = new Flag(1);
+            var flag1 = new Flag(1, 100);
             var team1 = new Team(new Team.Initializer
             {
                 Faction = TeamFaction.Eredin
             });
 
-            team1.StartCapture(flag1);
-            team1.DoneCapture(flag1);
+            flag1.StartCapture(team1.Faction);
+            flag1.Tick();
 
+            Assert.AreEqual(flag1.CaptureStatus, Flag.FlagCaptureStatus.Captured);
             Assert.AreEqual(flag1.Score, 0);
 
             flag1.GenScore();
@@ -143,11 +145,6 @@ namespace CoreTest
             Assert.AreEqual(flag1.Score, 10);
         }
 
-        //[TestMethod]
-        //public void Test40CreateMessageQueue()
-        //{
-        //    MessageBase messageCaptureFlagStart = new MessageCaptureFlagStart();
-        //}
     }
 
     [TestClass]
@@ -421,9 +418,34 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test3SendAnswerByMessageQueue()
+        public void Test2DoneCaptureByFlagTicks()
         {
+            game.Reset();
+            game.HandleMessage(new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Ennfi,
+                Faction = TeamFaction.Ciri
+            });
 
+            var flags = LoadFlags();
+            var index = 1;
+            game.HandleMessage(new MessageStartCapture
+            {
+                FlagId = flags[index].FlagId,
+                Faction = TeamFaction.Ciri
+            });
+
+            Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+            //TODO: ticks by internal handler
+            for (var i = 0; i < 10; i++) flags[index].Tick();
+            Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
         }
+
+        //[TestMethod]
+        //public void Test3SendAnswerByMessageQueue()
+        //{
+
+        //}
     }
 }

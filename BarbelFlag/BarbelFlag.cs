@@ -40,17 +40,6 @@ namespace BarbelFlag
 
         public int Score { get; private set; }
 
-        public void StartCapture(Flag flag)
-        {
-            flag.CaptureStatus = Flag.FlagCaptureStatus.Capturing;
-        }
-
-        public void DoneCapture(Flag flag)
-        {
-            flag.OwnerTeamFaction = Faction;
-            flag.CaptureStatus = Flag.FlagCaptureStatus.Captured;
-        }
-
         public void AddMember(int userId, CharacterBase character)
         {
             Members.Add(userId, character);
@@ -74,15 +63,35 @@ namespace BarbelFlag
         }
 
         public int FlagId { get; protected set; }
-        public FlagCaptureStatus CaptureStatus { get; set; }
+        public FlagCaptureStatus CaptureStatus { get; protected set; }
         public TeamFaction OwnerTeamFaction { get; set; }
         public int Score { get; protected set; }
+        protected int tickLimit;
+        protected int tickCurrent;
 
-
-        public Flag(int flagId)
+        public Flag(int flagId, int limit)
         {
             FlagId = flagId;
             OwnerTeamFaction = TeamFaction.None;
+            tickLimit = limit;
+            tickCurrent = 0;
+        }
+
+        public void StartCapture(TeamFaction faction)
+        {
+            CaptureStatus = Flag.FlagCaptureStatus.Capturing;
+            OwnerTeamFaction = faction;
+        }
+
+        public void Tick()
+        {
+            tickCurrent += 6000;
+            if (CaptureStatus == FlagCaptureStatus.Capturing && 
+                tickCurrent >= tickLimit)
+            {
+                CaptureStatus = FlagCaptureStatus.Captured;
+                tickCurrent = 0;
+            }
         }
 
         public void GenScore()

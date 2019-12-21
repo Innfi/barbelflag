@@ -11,6 +11,7 @@ namespace BarbelFlag
         public int WinScore = 1000;
         public int MemberCount = 3;
         public int FlagCount = 5;
+        public int FlagTicksToCapture = 60000;
     }
 
     public enum GameStatus
@@ -73,7 +74,7 @@ namespace BarbelFlag
             Flags = new List<Flag>();
             for (int i = 0; i < globalSetting.FlagCount; i++)
             {
-                Flags.Add(new Flag(i));
+                Flags.Add(new Flag(i, globalSetting.FlagTicksToCapture));
             }
         }
 
@@ -188,9 +189,7 @@ namespace BarbelFlag
             var flagId = msgStartCapture.FlagId;
 
             var flag = Flags.Find(x => x.FlagId == flagId);
-
-            flag.CaptureStatus = Flag.FlagCaptureStatus.Capturing;
-            flag.OwnerTeamFaction = msgStartCapture.Faction;
+            flag.StartCapture(msgStartCapture.Faction);
 
             return new AnswerStartCapture
             {
