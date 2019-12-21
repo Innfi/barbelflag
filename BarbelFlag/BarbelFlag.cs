@@ -86,45 +86,23 @@ namespace BarbelFlag
         public void Tick()
         {
             tickCurrent += 6000;
-            if (CaptureStatus == FlagCaptureStatus.Capturing && 
-                tickCurrent >= tickLimit)
+            if (tickCurrent < tickLimit) return;
+
+            if (CaptureStatus == FlagCaptureStatus.Capturing)
             {
                 CaptureStatus = FlagCaptureStatus.Captured;
-                tickCurrent = 0;
             }
+            else if (CaptureStatus == FlagCaptureStatus.Captured)
+            {
+                Score += 10; //FIXME: update team score by handlemessage
+            }
+
+            tickCurrent = 0;
         }
 
         public void GenScore()
         {
             Score = 10;
         }
-    }
-
-    public enum MessageType
-    {
-        //None = 0,
-        InitCharacter = 1,
-        LoadTeam = 2,
-        GetFlagsStatus = 3,
-        StartCapture = 4,
-    }
-
-    public enum ErrorCode
-    {
-        Ok = 0,
-        UserAlreadyRegistered = 11,
-        TeamMemberCountLimit = 12,
-        //InvalidMessageType = 999
-    }
-
-    public abstract class MessageBase
-    {
-        public MessageType MsgType { get; protected set; }
-    }
-
-    public abstract class AnswerBase
-    {
-        public MessageType MsgType { get; protected set; }
-        public ErrorCode Code;
-    }
+    }       
 }

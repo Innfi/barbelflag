@@ -15,14 +15,13 @@ finish game when score reached limit
 
 DONE
 --------------------------------------------------
-team
-- capture flags 
+character
+- basic stats
 flags
 - status: neutral / capturing  / captured
 - generate score
 - flag id
-character
-- basic stats
+- capture flag by ticks
 refactoring: fix team ids to 2 only. no need to variable ids
 init game instance
 instantiate chracters with teams
@@ -440,6 +439,43 @@ namespace CoreTest
             //TODO: ticks by internal handler
             for (var i = 0; i < 10; i++) flags[index].Tick();
             Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+        }
+
+        [TestMethod]
+        public void Test2GetScoreByTicks()
+        {
+            game.Reset();
+            game.HandleMessage(new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Ennfi,
+                Faction = TeamFaction.Ciri
+            });
+
+            var flags = LoadFlags();
+            var index = 1;
+            game.HandleMessage(new MessageStartCapture
+            {
+                FlagId = flags[index].FlagId,
+                Faction = TeamFaction.Ciri
+            });
+
+            var answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Ciri
+            });
+
+            Assert.AreEqual(answerLoadTeam.Score, 0);
+
+            for (var i = 0; i < 10; i++) flags[index].Tick();
+            Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+            
+            for (var i = 0; i < 10; i++) flags[index].Tick();
+            answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Ciri
+            });
+            Assert.AreEqual(answerLoadTeam.Score, 10);
         }
 
         //[TestMethod]

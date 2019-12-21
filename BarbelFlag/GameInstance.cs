@@ -164,13 +164,20 @@ namespace BarbelFlag
         {
             var msgLoadTeam = (MessageLoadTeam)message;
 
-            var members = teamCiri.Members;
-            if (msgLoadTeam.Faction != TeamFaction.Ciri) members = teamEredin.Members;
+            var resultTeam = teamCiri;
+            if (msgLoadTeam.Faction != TeamFaction.Ciri) resultTeam = teamEredin;
+
+            var score = 0;
+            foreach (var flag in Flags)
+            {
+                if (flag.OwnerTeamFaction == resultTeam.Faction) score += flag.Score;
+            }
 
             return new AnswerLoadTeam
             {
                 Code = ErrorCode.Ok,
-                TeamMembers = members
+                TeamMembers = resultTeam.Members,
+                Score = score
             };
         }
 
