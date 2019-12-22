@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Collections;
+
 
 namespace BarbelFlag
 {
@@ -22,6 +20,8 @@ namespace BarbelFlag
 
     public class GameInstance
     {
+        protected Queue messageQueue;
+
         public GameStatus Status { get; private set; }        
         protected List<Flag> Flags;
 
@@ -42,6 +42,7 @@ namespace BarbelFlag
             InitCharacters();
             InitTeams();
             InitFlags();
+            InitMessageQueue();
         }
 
         protected void LoadGlobalSetting()
@@ -76,6 +77,11 @@ namespace BarbelFlag
             {
                 Flags.Add(new Flag(i, globalSetting.FlagTicksToCapture));
             }
+        }
+
+        protected void InitMessageQueue()
+        {
+            messageQueue = new Queue();
         }
 
         public GameInstance(GlobalSetting globalSetting)
@@ -121,7 +127,7 @@ namespace BarbelFlag
                 };
             }
 
-            character = new CharacterInnfi();        
+            character = GenCharacter(msgInitCharacter.CharType);
 
             if (msgInitCharacter.Faction == TeamFaction.Ciri)
             {
@@ -158,6 +164,21 @@ namespace BarbelFlag
                 Character = character,
                 Faction = msgInitCharacter.Faction,
             };
+        }
+
+        protected CharacterBase GenCharacter(CharacterType type)
+        {
+            switch (type)
+            {
+                case CharacterType.Innfi:
+                    return new CharacterInnfi();
+                case CharacterType.Ennfi:
+                    return new CharacterEnnfi();
+                case CharacterType.Milli:
+                    return new CharacterMilli();
+                default:
+                    return new CharacterInnfi();
+            }
         }
 
         protected AnswerBase HandleLoadTeam(MessageBase message)
@@ -202,6 +223,25 @@ namespace BarbelFlag
             {
                 Code = ErrorCode.Ok
             };
+        }
+
+        public void EnqueueMessage(MessageBase message)
+        {
+            messageQueue.Enqueue(message);
+        }
+
+        public void Update()
+        {
+            //FIXME: concurrency
+            while (messageQueue.Count > 0)
+            {
+                var message = (MessageBase)messageQueue.Dequeue();
+
+                if (message.MsgType == MessageType.InitCharacter)
+                {
+                    HandleInitCharacter(message);
+                }
+            }
         }
     }
 }

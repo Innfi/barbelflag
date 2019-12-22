@@ -6,8 +6,10 @@ using BarbelFlag;
 TODO
 --------------------------------------------------
 generate score by flag ticks
+- alarm score from flag to game instance by message
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
+- async reply answer 
 limit handling character actions until the game starts
 start game 
 assign score to team when flag is captured
@@ -478,10 +480,28 @@ namespace CoreTest
             Assert.AreEqual(answerLoadTeam.Score, 10);
         }
 
-        //[TestMethod]
-        //public void Test3SendAnswerByMessageQueue()
-        //{
+        [TestMethod]
+        public void Test3SendAnswerByMessageQueue()
+        {
+            game.Reset();
 
-        //}
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Ennfi,
+                Faction = TeamFaction.Ciri
+            });
+
+            game.Update();
+
+            var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Ciri
+            });
+            var members = answer.TeamMembers;
+
+            Assert.AreEqual(members.Count, 1);
+            Assert.AreEqual(members[1].CharType, CharacterType.Ennfi);
+        }
     }
 }
