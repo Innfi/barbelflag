@@ -22,9 +22,9 @@ namespace BarbelFlag
     {
         protected Queue messageQueue;
 
-        public GameStatus Status { get; private set; }        
-        protected List<Flag> Flags;
+        public GameStatus Status { get; private set; } 
 
+        protected List<Flag> flags;
         protected GlobalSetting globalSetting;
         protected Dictionary<int, CharacterBase> characters;
         protected Team teamCiri;
@@ -72,10 +72,10 @@ namespace BarbelFlag
 
         protected void InitFlags()
         {
-            Flags = new List<Flag>();
+            flags = new List<Flag>();
             for (int i = 0; i < globalSetting.FlagCount; i++)
             {
-                Flags.Add(new Flag(i, globalSetting.FlagTicksToCapture));
+                flags.Add(new Flag(i, globalSetting.FlagTicksToCapture, this));
             }
         }
 
@@ -185,20 +185,14 @@ namespace BarbelFlag
         {
             var msgLoadTeam = (MessageLoadTeam)message;
 
-            var resultTeam = teamCiri;
-            if (msgLoadTeam.Faction != TeamFaction.Ciri) resultTeam = teamEredin;
-
-            var score = 0;
-            foreach (var flag in Flags)
-            {
-                if (flag.OwnerTeamFaction == resultTeam.Faction) score += flag.Score;
-            }
+            var team = teamCiri;
+            if (msgLoadTeam.Faction != TeamFaction.Ciri) team = teamEredin;
 
             return new AnswerLoadTeam
             {
                 Code = ErrorCode.Ok,
-                TeamMembers = resultTeam.Members,
-                Score = score
+                TeamMembers = team.Members,
+                Score = team.Score
             };
         }
 
@@ -207,7 +201,7 @@ namespace BarbelFlag
             return new AnswerGetFlagsStatus
             {
                 Code = ErrorCode.Ok,
-                Flags = this.Flags
+                Flags = this.flags
             };
         }
 
@@ -216,12 +210,29 @@ namespace BarbelFlag
             var msgStartCapture = (MessageStartCapture)message;
             var flagId = msgStartCapture.FlagId;
 
-            var flag = Flags.Find(x => x.FlagId == flagId);
+            var flag = flags.Find(x => x.FlagId == flagId);
             flag.StartCapture(msgStartCapture.Faction);
 
             return new AnswerStartCapture
             {
                 Code = ErrorCode.Ok
+            };
+        }
+
+        protected AnswerBase HandleAddScore(MessageBase message)
+        {
+            var msgAddScore = (MessageAddScore)message;
+
+            var team = teamCiri;
+            if (team.Faction != msgAddScore.Faction) team = teamEredin;
+
+            var scoreBefore = team.Score;
+            team.AddScore();
+
+            return new AnswerAddScore
+            {
+                ScoreBefore = scoreBefore,
+                ScoreAfter = team.Score
             };
         }
 
@@ -237,9 +248,17 @@ namespace BarbelFlag
             {
                 var message = (MessageBase)messageQueue.Dequeue();
 
-                if (message.MsgType == MessageType.InitCharacter)
+                switch (message.MsgType)
                 {
-                    HandleInitCharacter(message);
+                    case MessageType.InitCharacter:
+                        HandleInitCharacter(message);
+                        return;
+                    case MessageType.StartCapture:
+                        HandleStartCapture(message);
+                        return;
+                    case MessageType.AddScore:
+                        HandleAddScore(message);
+                        return;
                 }
             }
         }

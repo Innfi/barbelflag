@@ -9,6 +9,7 @@ namespace BarbelFlag
         LoadTeam = 2,
         GetFlagsStatus = 3,
         StartCapture = 4,
+        AddScore = 5,
     }
 
     public enum ErrorCode

@@ -5,8 +5,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-generate score by flag ticks
-- alarm score from flag to game instance by message
+refactoring: codebase
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 - async reply answer 
@@ -24,6 +23,8 @@ flags
 - generate score
 - flag id
 - capture flag by ticks
+generate score by flag ticks
+- alarm score from flag to game instance by message
 refactoring: fix team ids to 2 only. no need to variable ids
 init game instance
 instantiate chracters with teams
@@ -76,7 +77,7 @@ namespace CoreTest
         [TestMethod]
         public void Test20InitFlag()
         {
-            var flag = new Flag(0, 100);
+            var flag = new Flag(0, 100, null);
 
             Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
             Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Initial);
@@ -85,7 +86,7 @@ namespace CoreTest
         [TestMethod]
         public void Test21TeamCaptureAFlag()
         {
-            var dummyFlag = new Flag(0, 6000);
+            var dummyFlag = new Flag(0, 6000, null);
             var dummyTeam = new Team(new Team.Initializer
             {
                 Faction = TeamFaction.Ciri
@@ -113,8 +114,8 @@ namespace CoreTest
                 Faction = TeamFaction.Eredin
             });
 
-            var flag1 = new Flag(1, 6000);
-            var flag2 = new Flag(2, 6000);
+            var flag1 = new Flag(1, 6000, null);
+            var flag2 = new Flag(2, 6000, null);
 
             flag1.StartCapture(team1.Faction);
             flag2.StartCapture(team2.Faction);
@@ -125,27 +126,6 @@ namespace CoreTest
             Assert.AreEqual(flag1.OwnerTeamFaction, team1.Faction);
             Assert.AreEqual(flag2.OwnerTeamFaction, team2.Faction);
         }
-
-        [TestMethod]
-        public void Test23GetScoreFromFlag()
-        {
-            var flag1 = new Flag(1, 100);
-            var team1 = new Team(new Team.Initializer
-            {
-                Faction = TeamFaction.Eredin
-            });
-
-            flag1.StartCapture(team1.Faction);
-            flag1.Tick();
-
-            Assert.AreEqual(flag1.CaptureStatus, Flag.FlagCaptureStatus.Captured);
-            Assert.AreEqual(flag1.Score, 0);
-
-            flag1.GenScore();
-
-            Assert.AreEqual(flag1.Score, 10);
-        }
-
     }
 
     [TestClass]
@@ -473,6 +453,8 @@ namespace CoreTest
             Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
             
             for (var i = 0; i < 10; i++) flags[index].Tick();
+            game.Update();
+
             answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
             {
                 Faction = TeamFaction.Ciri
@@ -502,6 +484,54 @@ namespace CoreTest
 
             Assert.AreEqual(members.Count, 1);
             Assert.AreEqual(members[1].CharType, CharacterType.Ennfi);
+        }
+
+        [TestMethod]
+        public void Test3SendRaiseScoreFromFlagToTeam()
+        {
+            game.Reset();
+
+            var faction = TeamFaction.Eredin;
+            var capturedFlag = GetCapturedFlag(faction);
+            Assert.AreEqual(capturedFlag.OwnerTeamFaction, faction);
+            Assert.AreEqual(capturedFlag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
+
+            TickToGenerateScore(capturedFlag);
+            game.Update();
+
+            var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = faction
+            });
+
+            Assert.AreEqual(answer.Score, 10);
+        }
+
+        protected Flag GetCapturedFlag(TeamFaction faction)
+        {
+            var answer = (AnswerGetFlagsStatus)game.HandleMessage(
+                new MessageGetFlagsStatus());
+            var flags = answer.Flags;
+            var flagId = 1;
+
+            game.EnqueueMessage(new MessageStartCapture
+            {
+                Faction = faction,
+                FlagId = flagId
+            });
+
+            game.Update();
+
+            for (int i = 0; i < 10; i++) flags[flagId].Tick();
+
+            game.Update();
+
+            return flags[flagId];
+        }
+
+        protected void TickToGenerateScore(Flag flag)
+        {
+            for (int i = 0; i < 10; i++) flag.Tick();
         }
     }
 }

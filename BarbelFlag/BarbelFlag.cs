@@ -24,10 +24,11 @@ namespace BarbelFlag
         }
 
         public TeamFaction Faction { get; protected set; }
+        public int Score { get; private set; }
         public Dictionary<int, CharacterBase> Members { get; protected set; }
 
-        private GlobalSetting globalSetting;
-        private GameInstance gameInstance;
+        protected GlobalSetting globalSetting;
+        protected GameInstance gameInstance;
 
 
         public Team(Initializer initializer)
@@ -38,13 +39,15 @@ namespace BarbelFlag
             Members = new Dictionary<int, CharacterBase>();
         }
 
-        public int Score { get; private set; }
-
         public void AddMember(int userId, CharacterBase character)
         {
             Members.Add(userId, character);
         }
 
+        public void AddScore()
+        {
+            Score += 10;
+        }
 
         public void RaiseScoreDummy()
         {
@@ -65,16 +68,19 @@ namespace BarbelFlag
         public int FlagId { get; protected set; }
         public FlagCaptureStatus CaptureStatus { get; protected set; }
         public TeamFaction OwnerTeamFaction { get; set; }
-        public int Score { get; protected set; }
+
         protected int tickLimit;
         protected int tickCurrent;
+        protected GameInstance game;
 
-        public Flag(int flagId, int limit)
+
+        public Flag(int flagId, int limit, GameInstance gameInstance)
         {
             FlagId = flagId;
             OwnerTeamFaction = TeamFaction.None;
             tickLimit = limit;
             tickCurrent = 0;
+            game = gameInstance;
         }
 
         public void StartCapture(TeamFaction faction)
@@ -94,15 +100,13 @@ namespace BarbelFlag
             }
             else if (CaptureStatus == FlagCaptureStatus.Captured)
             {
-                Score += 10; //FIXME: update team score by handlemessage
+                game.EnqueueMessage(new MessageAddScore
+                {
+                    Faction = OwnerTeamFaction
+                });
             }
 
             tickCurrent = 0;
-        }
-
-        public void GenScore()
-        {
-            Score = 10;
         }
     }       
 }

@@ -59,6 +59,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\AddScore.cs" />
     <Compile Include="Actions\GetFlagsStatus.cs" />
     <Compile Include="Actions\StartCapture.cs" />
     <Compile Include="BarbelFlag.cs" />
