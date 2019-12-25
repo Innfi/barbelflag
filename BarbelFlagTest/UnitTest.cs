@@ -5,7 +5,6 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-refactoring: codebase
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 - async reply answer 
@@ -467,7 +466,7 @@ namespace CoreTest
         {
             game.Reset();
 
-            game.EnqueueMessage(new MessageInitCharacter
+            game.GameMsgQueue.EnqueueMessage(new MessageInitCharacter
             {
                 UserId = 1,
                 CharType = CharacterType.Ennfi,
@@ -514,7 +513,7 @@ namespace CoreTest
             var flags = answer.Flags;
             var flagId = 1;
 
-            game.EnqueueMessage(new MessageStartCapture
+            game.GameMsgQueue.EnqueueMessage(new MessageStartCapture
             {
                 Faction = faction,
                 FlagId = flagId
@@ -533,5 +532,8 @@ namespace CoreTest
         {
             for (int i = 0; i < 10; i++) flag.Tick();
         }
+
+        //[TestMethod]
+
     }
 }

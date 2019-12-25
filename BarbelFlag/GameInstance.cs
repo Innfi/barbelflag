@@ -20,15 +20,15 @@ namespace BarbelFlag
 
     public class GameInstance
     {
-        protected Queue messageQueue;
-
         public GameStatus Status { get; private set; } 
-
-        protected List<Flag> flags;
+        
         protected GlobalSetting globalSetting;
+        protected List<Flag> flags;
         protected Dictionary<int, CharacterBase> characters;
         protected Team teamCiri;
         protected Team teamEredin;
+
+        public MessageQueue GameMsgQueue;
 
 
         public GameInstance()
@@ -39,10 +39,10 @@ namespace BarbelFlag
         public void Reset()
         {
             LoadGlobalSetting();
+            InitMessageQueue();
             InitCharacters();
             InitTeams();
-            InitFlags();
-            InitMessageQueue();
+            InitFlags();            
         }
 
         protected void LoadGlobalSetting()
@@ -75,13 +75,13 @@ namespace BarbelFlag
             flags = new List<Flag>();
             for (int i = 0; i < globalSetting.FlagCount; i++)
             {
-                flags.Add(new Flag(i, globalSetting.FlagTicksToCapture, this));
+                flags.Add(new Flag(i, globalSetting.FlagTicksToCapture, GameMsgQueue));
             }
         }
 
         protected void InitMessageQueue()
         {
-            messageQueue = new Queue();
+            GameMsgQueue = new MessageQueue();
         }
 
         public GameInstance(GlobalSetting globalSetting)
@@ -110,6 +110,8 @@ namespace BarbelFlag
                     return HandleGetFlagsStatus(message);
                 case MessageType.StartCapture:
                     return HandleStartCapture(message);
+                case MessageType.AddScore:
+                    return HandleAddScore(message);
                 default:
                     return new AnswerInitCharacter();
             }
@@ -129,33 +131,19 @@ namespace BarbelFlag
 
             character = GenCharacter(msgInitCharacter.CharType);
 
-            if (msgInitCharacter.Faction == TeamFaction.Ciri)
-            {
-                if (teamCiri.Members.Count >= globalSetting.MemberCount)
-                {
-                    return new AnswerInitCharacter
-                    {
-                        Code = ErrorCode.TeamMemberCountLimit,
-                        UserId = msgInitCharacter.UserId
-                    };
-                }
-                teamCiri.AddMember(msgInitCharacter.UserId, character);
-            }
-            else
-            {
-                if (teamEredin.Members.Count >= globalSetting.MemberCount)
-                {
-                    return new AnswerInitCharacter
-                    {
-                        Code = ErrorCode.TeamMemberCountLimit,
-                        UserId = msgInitCharacter.UserId
-                    };
-                }
-                teamEredin.AddMember(msgInitCharacter.UserId, character);
-            }
+            var team = teamCiri;
+            if (msgInitCharacter.Faction != TeamFaction.Ciri) team = teamEredin;
 
+            if (team.Members.Count >= globalSetting.MemberCount)
+            {
+                return new AnswerInitCharacter
+                {
+                    Code = ErrorCode.TeamMemberCountLimit,
+                    UserId = msgInitCharacter.UserId
+                };
+            }
+            team.AddMember(msgInitCharacter.UserId, character);
             characters.Add(msgInitCharacter.UserId, character);
-
 
             return new AnswerInitCharacter
             {
@@ -236,30 +224,13 @@ namespace BarbelFlag
             };
         }
 
-        public void EnqueueMessage(MessageBase message)
-        {
-            messageQueue.Enqueue(message);
-        }
-
         public void Update()
-        {
-            //FIXME: concurrency
-            while (messageQueue.Count > 0)
+        {            
+            while (GameMsgQueue.Count > 0)
             {
-                var message = (MessageBase)messageQueue.Dequeue();
+                var message = (MessageBase)GameMsgQueue.Dequeue();
 
-                switch (message.MsgType)
-                {
-                    case MessageType.InitCharacter:
-                        HandleInitCharacter(message);
-                        return;
-                    case MessageType.StartCapture:
-                        HandleStartCapture(message);
-                        return;
-                    case MessageType.AddScore:
-                        HandleAddScore(message);
-                        return;
-                }
+                HandleMessage(message);
             }
         }
     }

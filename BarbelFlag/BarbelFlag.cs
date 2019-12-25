@@ -71,16 +71,16 @@ namespace BarbelFlag
 
         protected int tickLimit;
         protected int tickCurrent;
-        protected GameInstance game;
+        protected MessageQueue messageQueue;
 
 
-        public Flag(int flagId, int limit, GameInstance gameInstance)
+        public Flag(int flagId, int limit, MessageQueue queue)
         {
             FlagId = flagId;
             OwnerTeamFaction = TeamFaction.None;
             tickLimit = limit;
             tickCurrent = 0;
-            game = gameInstance;
+            messageQueue = queue;
         }
 
         public void StartCapture(TeamFaction faction)
@@ -100,7 +100,7 @@ namespace BarbelFlag
             }
             else if (CaptureStatus == FlagCaptureStatus.Captured)
             {
-                game.EnqueueMessage(new MessageAddScore
+                messageQueue.EnqueueMessage(new MessageAddScore
                 {
                     Faction = OwnerTeamFaction
                 });

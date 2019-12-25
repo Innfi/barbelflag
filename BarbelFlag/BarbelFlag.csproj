@@ -65,6 +65,7 @@
     <Compile Include="BarbelFlag.cs" />
     <Compile Include="Characters.cs" />
     <Compile Include="Actions\LoadTeam.cs" />
+    <Compile Include="Common\MessageQueue.cs" />
     <Compile Include="Common\PacketBase.cs" />
     <Compile Include="GameInstance.cs" />
     <Compile Include="Actions\InitCharacter.cs" />
