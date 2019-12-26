@@ -5,12 +5,11 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
+refactoring: flags ticks from GameInstance.Update()
+finish game when score reached limit
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 - async reply answer 
-start game 
-assign score to team when flag is captured
-finish game when score reached limit
 
 DONE
 --------------------------------------------------
@@ -30,6 +29,7 @@ instantiate flags
 assign characters to teams to limit (fixed number)
 handle events (move, attack, capture)
 limit handling character actions until the game starts
+start game 
 */
 
 namespace CoreTest
@@ -539,10 +539,9 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test4DenyMessageBeforeGameStart()
+        public void Test4DenyStartCaptureBeforeGameStart()
         {
             game.Reset();
-
             Assert.AreEqual(game.Status, GameStatus.Initial);
 
             var answer = game.HandleMessage(new MessageInitCharacter
@@ -573,6 +572,92 @@ namespace CoreTest
 
             var startAnswer = game.HandleMessage(msgStartCpature);
             Assert.AreEqual(startAnswer.Code, ErrorCode.Ok);
+        }
+
+        [TestMethod]
+        public void Test5FinishGame()
+        {
+            game.Reset();
+            AssignCharactersToTeams();
+            game.Start();
+
+            var flags = GetFlags();
+
+            var faction = TeamFaction.Ciri;
+            var flagId = 4;
+            CaptureFlag(faction, flags[flagId]);
+            Assert.AreEqual(flags[flagId].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+
+            var globalSetting = new GlobalSetting();
+            GenerateScoreToWin(flags[flagId], globalSetting);
+            game.Update();
+
+            Assert.AreEqual(game.Status, GameStatus.End);
+        }
+
+        protected void AssignCharactersToTeams()
+        {
+            game.GameMsgQueue.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Milli,
+                Faction = TeamFaction.Ciri
+            });
+
+            game.GameMsgQueue.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = 22,
+                CharType = CharacterType.Ennfi,
+                Faction = TeamFaction.Eredin
+            });
+
+            game.Update();
+        }
+
+        protected List<Flag> GetFlags()
+        {
+            var answer = (AnswerGetFlagsStatus)game.HandleMessage(
+                new MessageGetFlagsStatus());
+
+            return answer.Flags;
+        }
+
+        protected void CaptureFlag(TeamFaction faction, Flag flag)
+        {
+            game.GameMsgQueue.EnqueueMessage(new MessageStartCapture
+            {
+                Faction = faction,
+                FlagId = flag.FlagId
+            });
+            game.Update();
+
+            for (int i = 0; i < 10; i++) flag.Tick();
+            game.Update();
+        }
+
+        protected void GenerateScoreToWin(Flag flag, GlobalSetting globalSetting)
+        {
+            var score = 0;
+            var count = 0;
+            while (score < globalSetting.WinScore || count < 10)
+            {
+                TickToGenerateScore(flag);
+                game.Update();
+
+                var team = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+                {
+                    Faction = flag.OwnerTeamFaction
+                });
+
+                score = team.Score;
+                count++;
+            }
+        }
+
+        [TestMethod]
+        public void Test5FlagTickBlockedAfterEnd()
+        {
+
         }
     }
 }

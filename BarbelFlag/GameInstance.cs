@@ -6,7 +6,7 @@ namespace BarbelFlag
 {
     public class GlobalSetting
     {
-        public int WinScore = 1000;
+        public int WinScore = 100;
         public int MemberCount = 3;
         public int FlagCount = 5;
         public int FlagTicksToCapture = 60000;
@@ -39,6 +39,7 @@ namespace BarbelFlag
 
         public void Reset()
         {
+            Status = GameStatus.Initial;
             LoadGlobalSetting();
             InitMessageQueue();
             InitCharacters();
@@ -225,6 +226,8 @@ namespace BarbelFlag
 
             var scoreBefore = team.Score;
             team.AddScore();
+
+            if(team.Score >= globalSetting.WinScore) Status = GameStatus.End;
 
             return new AnswerAddScore
             {
