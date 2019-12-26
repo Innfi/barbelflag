@@ -8,7 +8,6 @@ TODO
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 - async reply answer 
-limit handling character actions until the game starts
 start game 
 assign score to team when flag is captured
 finish game when score reached limit
@@ -30,6 +29,7 @@ instantiate chracters with teams
 instantiate flags
 assign characters to teams to limit (fixed number)
 handle events (move, attack, capture)
+limit handling character actions until the game starts
 */
 
 namespace CoreTest
@@ -326,6 +326,7 @@ namespace CoreTest
         public void Test2CaptureFlagByHandleMessage()
         {
             game.Reset();
+            game.Start();
             var flags = LoadFlags();
             var targetFlag = flags[0];
 
@@ -353,6 +354,7 @@ namespace CoreTest
         public void Test2InitFlags3OwnerTeamID()
         {
             game.Reset();
+            game.Start();
 
             var initCharFromCiri = new MessageInitCharacter
             {
@@ -401,6 +403,7 @@ namespace CoreTest
         public void Test2DoneCaptureByFlagTicks()
         {
             game.Reset();
+            game.Start();
             game.HandleMessage(new MessageInitCharacter
             {
                 UserId = 1,
@@ -426,6 +429,7 @@ namespace CoreTest
         public void Test2GetScoreByTicks()
         {
             game.Reset();
+            game.Start();
             game.HandleMessage(new MessageInitCharacter
             {
                 UserId = 1,
@@ -489,6 +493,7 @@ namespace CoreTest
         public void Test3SendRaiseScoreFromFlagToTeam()
         {
             game.Reset();
+            game.Start();
 
             var faction = TeamFaction.Eredin;
             var capturedFlag = GetCapturedFlag(faction);
@@ -533,7 +538,41 @@ namespace CoreTest
             for (int i = 0; i < 10; i++) flag.Tick();
         }
 
-        //[TestMethod]
+        [TestMethod]
+        public void Test4DenyMessageBeforeGameStart()
+        {
+            game.Reset();
 
+            Assert.AreEqual(game.Status, GameStatus.Initial);
+
+            var answer = game.HandleMessage(new MessageInitCharacter
+            {
+                UserId = 1,
+                CharType = CharacterType.Milli,
+                Faction = TeamFaction.Ciri
+            });
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+
+            var answer2 = game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Ciri
+            });
+            Assert.AreEqual(answer2.Code, ErrorCode.Ok);
+
+            var msgStartCpature = new MessageStartCapture
+            {
+                FlagId = 1,
+                Faction = TeamFaction.Ciri
+            };
+
+            var invalidAnswer = game.HandleMessage(msgStartCpature);
+            Assert.AreEqual(invalidAnswer.Code, ErrorCode.GameNotStarted);
+
+            game.Start();
+            Assert.AreEqual(game.Status, GameStatus.Started);
+
+            var startAnswer = game.HandleMessage(msgStartCpature);
+            Assert.AreEqual(startAnswer.Code, ErrorCode.Ok);
+        }
     }
 }

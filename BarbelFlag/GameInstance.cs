@@ -15,6 +15,7 @@ namespace BarbelFlag
     public enum GameStatus
     {
         Initial = 0,
+        Started = 10,
         End = 100
     }
 
@@ -195,6 +196,14 @@ namespace BarbelFlag
 
         protected AnswerBase HandleStartCapture(MessageBase message)
         {
+            if (Status != GameStatus.Started)
+            {
+                return new AnswerStartCapture
+                {
+                    Code = ErrorCode.GameNotStarted
+                };
+            }
+
             var msgStartCapture = (MessageStartCapture)message;
             var flagId = msgStartCapture.FlagId;
 
@@ -232,6 +241,11 @@ namespace BarbelFlag
 
                 HandleMessage(message);
             }
+        }
+
+        public void Start()
+        {
+            Status = GameStatus.Started;
         }
     }
 }

@@ -17,6 +17,7 @@ namespace BarbelFlag
         Ok = 0,
         UserAlreadyRegistered = 11,
         TeamMemberCountLimit = 12,
+        GameNotStarted = 100,
         //InvalidMessageType = 999
     }
 
