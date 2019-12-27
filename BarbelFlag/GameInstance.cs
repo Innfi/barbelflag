@@ -219,6 +219,14 @@ namespace BarbelFlag
 
         protected AnswerBase HandleAddScore(MessageBase message)
         {
+            if (Status == GameStatus.End)
+            {
+                return new AnswerAddScore
+                {
+                    Code = ErrorCode.GameEnd
+                };
+            }
+
             var msgAddScore = (MessageAddScore)message;
 
             var team = teamCiri;

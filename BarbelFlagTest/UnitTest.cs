@@ -6,7 +6,6 @@ using BarbelFlag;
 TODO
 --------------------------------------------------
 refactoring: flags ticks from GameInstance.Update()
-finish game when score reached limit
 refactoring: capture flag by HandleMessage
 refactoring: HandleMessage to message queue
 - async reply answer 
@@ -30,6 +29,8 @@ assign characters to teams to limit (fixed number)
 handle events (move, attack, capture)
 limit handling character actions until the game starts
 start game 
+finish game when score reached limit
+limit flag ticks after game ends
 */
 
 namespace CoreTest
@@ -43,17 +44,6 @@ namespace CoreTest
         public void SetUp()
         {
             globalSetting = new GlobalSetting();
-        }
-
-        [TestMethod]
-        public void Test0InitTeam()
-        {
-            Assert.AreEqual(globalSetting.WinScore, 1000);
-
-            var team = new Team(new Team.Initializer
-            {
-                Setting = globalSetting
-            });
         }
 
         [TestMethod]
@@ -168,11 +158,13 @@ namespace CoreTest
     public class GameInstanceTest
     {
         protected GameInstance game;
+        protected GlobalSetting globalSetting;
 
         [TestInitialize]
         public void SetUp()
         {
             game = new GameInstance();
+            globalSetting = new GlobalSetting();
         }
 
         [TestMethod]
@@ -582,16 +574,12 @@ namespace CoreTest
             game.Start();
 
             var flags = GetFlags();
-
             var faction = TeamFaction.Ciri;
             var flagId = 4;
             CaptureFlag(faction, flags[flagId]);
             Assert.AreEqual(flags[flagId].CaptureStatus, Flag.FlagCaptureStatus.Captured);
 
-            var globalSetting = new GlobalSetting();
-            GenerateScoreToWin(flags[flagId], globalSetting);
-            game.Update();
-
+            GenerateScoreToWin(flags[flagId], globalSetting);            
             Assert.AreEqual(game.Status, GameStatus.End);
         }
 
@@ -652,12 +640,34 @@ namespace CoreTest
                 score = team.Score;
                 count++;
             }
+
+            game.Update();
         }
 
         [TestMethod]
         public void Test5FlagTickBlockedAfterEnd()
         {
+            game.Reset();
+            AssignCharactersToTeams();
+            game.Start();
 
+            var flags = GetFlags();            
+            var flagIdCiri = 4;
+            var flagIdEredin = 2;
+            CaptureFlag(TeamFaction.Ciri, flags[flagIdCiri]);
+            CaptureFlag(TeamFaction.Eredin, flags[flagIdEredin]);
+
+            GenerateScoreToWin(flags[flagIdCiri], globalSetting);
+            Assert.AreEqual(game.Status, GameStatus.End);
+
+            TickToGenerateScore(flags[flagIdEredin]);
+            game.Update();
+            var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Eredin
+            });
+
+            Assert.AreEqual(answer.Score, 0);
         }
     }
 }

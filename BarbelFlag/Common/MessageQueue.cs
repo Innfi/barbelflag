@@ -19,8 +19,6 @@ namespace BarbelFlag
         public void EnqueueMessage(MessageBase message)
         {
             messageQueue.Enqueue(message);
-
-            int dummy = 1;
         }
 
         public MessageBase Dequeue()
