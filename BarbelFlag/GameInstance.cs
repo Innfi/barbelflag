@@ -95,11 +95,6 @@ namespace BarbelFlag
             InitFlags();
         }
 
-        public void DummyStatusChanger()
-        {
-            Status = GameStatus.End;
-        }
-
         public AnswerBase HandleMessage(MessageBase message)
         {
             switch (message.MsgType)
@@ -115,7 +110,7 @@ namespace BarbelFlag
                 case MessageType.AddScore:
                     return HandleAddScore(message);
                 default:
-                    return new AnswerInitCharacter();
+                    return new AnswerBase { Code = ErrorCode.InvalidMessageType };
             }
         }
 
@@ -245,13 +240,15 @@ namespace BarbelFlag
         }
 
         public void Update()
-        {            
+        {
+            foreach (var flag in flags) flag.Tick();
+
             while (GameMsgQueue.Count > 0)
             {
                 var message = (MessageBase)GameMsgQueue.Dequeue();
 
                 HandleMessage(message);
-            }
+            }            
         }
 
         public void Start()

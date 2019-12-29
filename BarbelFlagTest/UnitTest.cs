@@ -5,8 +5,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-refactoring: flags ticks from GameInstance.Update()
-refactoring: capture flag by HandleMessage
+refactoring: flag status view data
 refactoring: HandleMessage to message queue
 - async reply answer 
 
@@ -31,6 +30,7 @@ limit handling character actions until the game starts
 start game 
 finish game when score reached limit
 limit flag ticks after game ends
+refactoring: flags ticks from GameInstance.Update()
 */
 
 namespace CoreTest
@@ -44,23 +44,6 @@ namespace CoreTest
         public void SetUp()
         {
             globalSetting = new GlobalSetting();
-        }
-
-        [TestMethod]
-        public void Test1NotifyGameInstanceFromTeam()
-        {
-            var globalSetting = new GlobalSetting();
-
-            var gameInstance = new GameInstance();
-            var team = new Team(new Team.Initializer
-            {
-                Setting = globalSetting,
-                Game = gameInstance
-            });
-
-            Assert.AreEqual(gameInstance.Status, GameStatus.Initial);
-            team.RaiseScoreDummy();
-            Assert.AreEqual(gameInstance.Status, GameStatus.End);
         }
 
         [TestMethod]
@@ -413,7 +396,7 @@ namespace CoreTest
 
             Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             //TODO: ticks by internal handler
-            for (var i = 0; i < 10; i++) flags[index].Tick();
+            for (var i = 0; i < 10; i++) game.Update();
             Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
         }
 
@@ -444,11 +427,10 @@ namespace CoreTest
 
             Assert.AreEqual(answerLoadTeam.Score, 0);
 
-            for (var i = 0; i < 10; i++) flags[index].Tick();
+            for (var i = 0; i < 10; i++) game.Update();
             Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
             
-            for (var i = 0; i < 10; i++) flags[index].Tick();
-            game.Update();
+            for (var i = 0; i < 10; i++) game.Update();
 
             answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
             {
@@ -518,7 +500,7 @@ namespace CoreTest
 
             game.Update();
 
-            for (int i = 0; i < 10; i++) flags[flagId].Tick();
+            for (int i = 0; i < 10; i++) game.Update();
 
             game.Update();
 
@@ -527,7 +509,7 @@ namespace CoreTest
 
         protected void TickToGenerateScore(Flag flag)
         {
-            for (int i = 0; i < 10; i++) flag.Tick();
+            for (int i = 0; i < 10; i++) game.Update();
         }
 
         [TestMethod]
@@ -619,15 +601,14 @@ namespace CoreTest
             });
             game.Update();
 
-            for (int i = 0; i < 10; i++) flag.Tick();
-            game.Update();
+            for (int i = 0; i < 10; i++) game.Update();
         }
 
         protected void GenerateScoreToWin(Flag flag, GlobalSetting globalSetting)
         {
             var score = 0;
             var count = 0;
-            while (score < globalSetting.WinScore || count < 10)
+            while (score < globalSetting.WinScore || count < 20)
             {
                 TickToGenerateScore(flag);
                 game.Update();
@@ -660,6 +641,13 @@ namespace CoreTest
             GenerateScoreToWin(flags[flagIdCiri], globalSetting);
             Assert.AreEqual(game.Status, GameStatus.End);
 
+            var answerScore = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Eredin
+            });
+
+            Assert.AreEqual(answerScore.Score, 90);
+
             TickToGenerateScore(flags[flagIdEredin]);
             game.Update();
             var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
@@ -667,7 +655,7 @@ namespace CoreTest
                 Faction = TeamFaction.Eredin
             });
 
-            Assert.AreEqual(answer.Score, 0);
+            Assert.AreEqual(answer.Score, 90);
         }
     }
 }

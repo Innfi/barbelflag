@@ -48,12 +48,6 @@ namespace BarbelFlag
         {
             Score += 10;
         }
-
-        public void RaiseScoreDummy()
-        {
-            Score = globalSetting.WinScore;
-            gameInstance.DummyStatusChanger();
-        }
     }
 
     public class Flag

@@ -19,15 +19,15 @@ namespace BarbelFlag
         TeamMemberCountLimit = 12,
         GameNotStarted = 100,
         GameEnd = 200,
-        //InvalidMessageType = 999
+        InvalidMessageType = 999
     }
 
-    public abstract class MessageBase
+    public class MessageBase
     {
         public MessageType MsgType { get; protected set; }
     }
 
-    public abstract class AnswerBase
+    public class AnswerBase
     {
         public MessageType MsgType { get; protected set; }
         public ErrorCode Code;
