@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace BarbelFlag
 {
-    public class MessageGetFlagsStatus : MessageBase
+    public class MessageGetFlagViews : MessageBase
     {
-        public MessageGetFlagsStatus()
+        public MessageGetFlagViews()
         {
-            MsgType = MessageType.GetFlagsStatus;
+            MsgType = MessageType.GetFlagViews;
         }
     }
 
-    public class AnswerGetFlagsStatus : AnswerBase
+    public class AnswerGetFlagViews : AnswerBase
     {
-        public List<Flag> Flags;
+        public List<FlagView> FlagViews;
 
-        public AnswerGetFlagsStatus()
+        public AnswerGetFlagViews()
         {
-            MsgType = MessageType.GetFlagsStatus;
+            MsgType = MessageType.GetFlagViews;
         }
     }
 }

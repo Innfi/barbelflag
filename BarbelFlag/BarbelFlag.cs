@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 
 namespace BarbelFlag
@@ -49,58 +45,4 @@ namespace BarbelFlag
             Score += 10;
         }
     }
-
-    public class Flag
-    {
-        public enum FlagCaptureStatus
-        {
-            Initial = 0,
-            Capturing = 5,
-            Captured = 10
-        }
-
-        public int FlagId { get; protected set; }
-        public FlagCaptureStatus CaptureStatus { get; protected set; }
-        public TeamFaction OwnerTeamFaction { get; set; }
-
-        protected int tickLimit;
-        protected int tickCurrent;
-        protected MessageQueue messageQueue;
-
-
-        public Flag(int flagId, int limit, MessageQueue queue)
-        {
-            FlagId = flagId;
-            OwnerTeamFaction = TeamFaction.None;
-            tickLimit = limit;
-            tickCurrent = 0;
-            messageQueue = queue;
-        }
-
-        public void StartCapture(TeamFaction faction)
-        {
-            CaptureStatus = Flag.FlagCaptureStatus.Capturing;
-            OwnerTeamFaction = faction;
-        }
-
-        public void Tick()
-        {
-            tickCurrent += 6000;
-            if (tickCurrent < tickLimit) return;
-
-            if (CaptureStatus == FlagCaptureStatus.Capturing)
-            {
-                CaptureStatus = FlagCaptureStatus.Captured;
-            }
-            else if (CaptureStatus == FlagCaptureStatus.Captured)
-            {
-                messageQueue.EnqueueMessage(new MessageAddScore
-                {
-                    Faction = OwnerTeamFaction
-                });
-            }
-
-            tickCurrent = 0;
-        }
-    }       
 }

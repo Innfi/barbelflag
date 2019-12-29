@@ -5,7 +5,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-refactoring: flag status view data
+organize Message / Answer from character's view
 refactoring: HandleMessage to message queue
 - async reply answer 
 
@@ -31,75 +31,11 @@ start game
 finish game when score reached limit
 limit flag ticks after game ends
 refactoring: flags ticks from GameInstance.Update()
+refactoring: flag status view data
 */
 
 namespace CoreTest
 {
-    [TestClass]
-    public class BarbelFlagTestFarm
-    {
-        private GlobalSetting globalSetting;
-
-        [TestInitialize]
-        public void SetUp()
-        {
-            globalSetting = new GlobalSetting();
-        }
-
-        [TestMethod]
-        public void Test20InitFlag()
-        {
-            var flag = new Flag(0, 100, null);
-
-            Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
-            Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Initial);
-        }
-
-        [TestMethod]
-        public void Test21TeamCaptureAFlag()
-        {
-            var dummyFlag = new Flag(0, 6000, null);
-            var dummyTeam = new Team(new Team.Initializer
-            {
-                Faction = TeamFaction.Ciri
-            });
-
-            dummyFlag.StartCapture(dummyTeam.Faction);
-            Assert.AreEqual(dummyFlag.OwnerTeamFaction, dummyTeam.Faction);
-            Assert.AreEqual(dummyFlag.CaptureStatus, Flag.FlagCaptureStatus.Capturing);
-
-            dummyFlag.Tick();
-            Assert.AreEqual(dummyFlag.OwnerTeamFaction, dummyTeam.Faction);
-            Assert.AreEqual(dummyFlag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
-        }
-
-        [TestMethod]
-        public void Test22DifferentTeamsCaptureFlags()
-        {
-            var team1 = new Team(new Team.Initializer
-            {
-                Faction = TeamFaction.Ciri
-            });
-
-            var team2 = new Team(new Team.Initializer
-            {
-                Faction = TeamFaction.Eredin
-            });
-
-            var flag1 = new Flag(1, 6000, null);
-            var flag2 = new Flag(2, 6000, null);
-
-            flag1.StartCapture(team1.Faction);
-            flag2.StartCapture(team2.Faction);
-
-            flag1.Tick();
-            flag2.Tick();
-
-            Assert.AreEqual(flag1.OwnerTeamFaction, team1.Faction);
-            Assert.AreEqual(flag2.OwnerTeamFaction, team2.Faction);
-        }
-    }
-
     [TestClass]
     public class CharacterTest
     {
@@ -285,13 +221,13 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitFlags1Instantiate()
         {
-            var answer = game.HandleMessage(new MessageGetFlagsStatus());
-            Assert.AreEqual(answer.MsgType, MessageType.GetFlagsStatus);
+            var answer = game.HandleMessage(new MessageGetFlagViews());
+            Assert.AreEqual(answer.MsgType, MessageType.GetFlagViews);
 
-            var answerFlagsStatus = (AnswerGetFlagsStatus)answer;
-            Assert.AreEqual(answerFlagsStatus.Flags != null, true);
+            var answerFlagsStatus = (AnswerGetFlagViews)answer;
+            Assert.AreEqual(answerFlagsStatus.FlagViews != null, true);
 
-            foreach (var flag in answerFlagsStatus.Flags)
+            foreach (var flag in answerFlagsStatus.FlagViews)
             {
                 Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.None);
             }
@@ -302,7 +238,7 @@ namespace CoreTest
         {
             game.Reset();
             game.Start();
-            var flags = LoadFlags();
+            var flags = LoadFlagViews();
             var targetFlag = flags[0];
 
             var answer = game.HandleMessage(new MessageStartCapture
@@ -313,16 +249,16 @@ namespace CoreTest
             Assert.AreEqual(answer.MsgType, MessageType.StartCapture);
             Assert.AreEqual(answer.Code, ErrorCode.Ok);
 
-            var resultFlags = LoadFlags();
-            Assert.AreEqual(resultFlags[0].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+            var resultViews = LoadFlagViews();
+            Assert.AreEqual(resultViews[0].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             //TODO: get AnswerDoneCapture with timer
         }
 
-        protected List<Flag> LoadFlags()
+        protected List<FlagView> LoadFlagViews()
         {
-            var answer = (AnswerGetFlagsStatus)game.HandleMessage(new MessageGetFlagsStatus());
+            var answer = (AnswerGetFlagViews)game.HandleMessage(new MessageGetFlagViews());
 
-            return answer.Flags;
+            return answer.FlagViews;
         }
 
         [TestMethod]
@@ -347,7 +283,7 @@ namespace CoreTest
             game.HandleMessage(initCharFromCiri);
             game.HandleMessage(initCharFromEredin);
 
-            var flags = LoadFlags();
+            var flags = LoadFlagViews();
             var flagIndexCiri = 1;
             var flagIndexEredin = 4;
 
@@ -362,7 +298,7 @@ namespace CoreTest
                 Faction = initCharFromEredin.Faction
             });
 
-            var resultflags = LoadFlags();
+            var resultflags = LoadFlagViews();
             Assert.AreEqual(
                 resultflags[flagIndexCiri].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             Assert.AreEqual(
@@ -386,18 +322,20 @@ namespace CoreTest
                 Faction = TeamFaction.Ciri
             });
 
-            var flags = LoadFlags();
             var index = 1;
             game.HandleMessage(new MessageStartCapture
             {
-                FlagId = flags[index].FlagId,
+                FlagId = index,
                 Faction = TeamFaction.Ciri
             });
 
-            Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+            var views = LoadFlagViews();
+            Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             //TODO: ticks by internal handler
             for (var i = 0; i < 10; i++) game.Update();
-            Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+
+            views = LoadFlagViews();
+            Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
         }
 
         [TestMethod]
@@ -411,12 +349,11 @@ namespace CoreTest
                 CharType = CharacterType.Ennfi,
                 Faction = TeamFaction.Ciri
             });
-
-            var flags = LoadFlags();
+            
             var index = 1;
             game.HandleMessage(new MessageStartCapture
             {
-                FlagId = flags[index].FlagId,
+                FlagId = index,
                 Faction = TeamFaction.Ciri
             });
 
@@ -428,7 +365,9 @@ namespace CoreTest
             Assert.AreEqual(answerLoadTeam.Score, 0);
 
             for (var i = 0; i < 10; i++) game.Update();
-            Assert.AreEqual(flags[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+
+            var views = LoadFlagViews();
+            Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
             
             for (var i = 0; i < 10; i++) game.Update();
 
@@ -474,7 +413,7 @@ namespace CoreTest
             Assert.AreEqual(capturedFlag.OwnerTeamFaction, faction);
             Assert.AreEqual(capturedFlag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
 
-            TickToGenerateScore(capturedFlag);
+            TickToGenerateScore();
             game.Update();
 
             var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
@@ -485,11 +424,8 @@ namespace CoreTest
             Assert.AreEqual(answer.Score, 10);
         }
 
-        protected Flag GetCapturedFlag(TeamFaction faction)
+        protected FlagView GetCapturedFlag(TeamFaction faction)
         {
-            var answer = (AnswerGetFlagsStatus)game.HandleMessage(
-                new MessageGetFlagsStatus());
-            var flags = answer.Flags;
             var flagId = 1;
 
             game.GameMsgQueue.EnqueueMessage(new MessageStartCapture
@@ -504,10 +440,12 @@ namespace CoreTest
 
             game.Update();
 
-            return flags[flagId];
+            var answer = (AnswerGetFlagViews)game.HandleMessage(
+                new MessageGetFlagViews());
+            return answer.FlagViews[flagId];
         }
 
-        protected void TickToGenerateScore(Flag flag)
+        protected void TickToGenerateScore()
         {
             for (int i = 0; i < 10; i++) game.Update();
         }
@@ -554,14 +492,15 @@ namespace CoreTest
             game.Reset();
             AssignCharactersToTeams();
             game.Start();
-
-            var flags = GetFlags();
+            
             var faction = TeamFaction.Ciri;
             var flagId = 4;
-            CaptureFlag(faction, flags[flagId]);
-            Assert.AreEqual(flags[flagId].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+            CaptureFlag(faction, flagId);
 
-            GenerateScoreToWin(flags[flagId], globalSetting);            
+            var views = GetFlagViews();
+            Assert.AreEqual(views[flagId].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+
+            GenerateScoreToWin(views[flagId], globalSetting);            
             Assert.AreEqual(game.Status, GameStatus.End);
         }
 
@@ -584,38 +523,38 @@ namespace CoreTest
             game.Update();
         }
 
-        protected List<Flag> GetFlags()
+        protected List<FlagView> GetFlagViews()
         {
-            var answer = (AnswerGetFlagsStatus)game.HandleMessage(
-                new MessageGetFlagsStatus());
+            var answer = (AnswerGetFlagViews)game.HandleMessage(
+                new MessageGetFlagViews());
 
-            return answer.Flags;
+            return answer.FlagViews;
         }
 
-        protected void CaptureFlag(TeamFaction faction, Flag flag)
+        protected void CaptureFlag(TeamFaction faction, int flagId)
         {
             game.GameMsgQueue.EnqueueMessage(new MessageStartCapture
             {
                 Faction = faction,
-                FlagId = flag.FlagId
+                FlagId = flagId
             });
             game.Update();
 
             for (int i = 0; i < 10; i++) game.Update();
         }
 
-        protected void GenerateScoreToWin(Flag flag, GlobalSetting globalSetting)
+        protected void GenerateScoreToWin(FlagView view, GlobalSetting globalSetting)
         {
             var score = 0;
             var count = 0;
             while (score < globalSetting.WinScore || count < 20)
             {
-                TickToGenerateScore(flag);
+                TickToGenerateScore();
                 game.Update();
 
                 var team = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
                 {
-                    Faction = flag.OwnerTeamFaction
+                    Faction = view.OwnerTeamFaction
                 });
 
                 score = team.Score;
@@ -632,12 +571,12 @@ namespace CoreTest
             AssignCharactersToTeams();
             game.Start();
 
-            var flags = GetFlags();            
             var flagIdCiri = 4;
             var flagIdEredin = 2;
-            CaptureFlag(TeamFaction.Ciri, flags[flagIdCiri]);
-            CaptureFlag(TeamFaction.Eredin, flags[flagIdEredin]);
+            CaptureFlag(TeamFaction.Ciri, flagIdCiri);
+            CaptureFlag(TeamFaction.Eredin, flagIdEredin);
 
+            var flags = GetFlagViews();
             GenerateScoreToWin(flags[flagIdCiri], globalSetting);
             Assert.AreEqual(game.Status, GameStatus.End);
 
@@ -648,7 +587,7 @@ namespace CoreTest
 
             Assert.AreEqual(answerScore.Score, 90);
 
-            TickToGenerateScore(flags[flagIdEredin]);
+            TickToGenerateScore();
             game.Update();
             var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
             {

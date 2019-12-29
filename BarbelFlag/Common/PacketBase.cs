@@ -7,7 +7,7 @@ namespace BarbelFlag
         //None = 0,
         InitCharacter = 1,
         LoadTeam = 2,
-        GetFlagsStatus = 3,
+        GetFlagViews = 3,
         StartCapture = 4,
         AddScore = 5,
     }

@@ -103,8 +103,8 @@ namespace BarbelFlag
                     return HandleInitCharacter(message);
                 case MessageType.LoadTeam:
                     return HandleLoadTeam(message);
-                case MessageType.GetFlagsStatus:
-                    return HandleGetFlagsStatus(message);
+                case MessageType.GetFlagViews:
+                    return HandleGetFlagViews(message);
                 case MessageType.StartCapture:
                     return HandleStartCapture(message);
                 case MessageType.AddScore:
@@ -181,13 +181,22 @@ namespace BarbelFlag
             };
         }
 
-        protected AnswerBase HandleGetFlagsStatus(MessageBase message)
+        protected AnswerBase HandleGetFlagViews(MessageBase message)
         {
-            return new AnswerGetFlagsStatus
+            return new AnswerGetFlagViews
             {
                 Code = ErrorCode.Ok,
-                Flags = this.flags
+                FlagViews = ToFlagViews()
             };
+        }
+
+        protected List<FlagView> ToFlagViews()
+        {
+            var views = new List<FlagView>();
+
+            foreach (var flag in flags) views.Add(flag.ToFlagView());
+
+            return views;
         }
 
         protected AnswerBase HandleStartCapture(MessageBase message)
