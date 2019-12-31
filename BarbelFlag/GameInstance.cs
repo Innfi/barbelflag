@@ -21,7 +21,7 @@ namespace BarbelFlag
 
     public class GameInstance
     {
-        public GameStatus Status { get; private set; } 
+        public GameStatus Status { get; protected set; } 
         
         protected GlobalSetting globalSetting;
         protected List<Flag> flags;
@@ -29,22 +29,32 @@ namespace BarbelFlag
         protected Team teamCiri;
         protected Team teamEredin;
 
-        public MessageQueue GameMsgQueue;
+        public MessageQueue MsgQ { get; protected set; }
+
+        protected Dictionary<int, GameClient> gameClients;
 
 
         public GameInstance()
         {
+            LoadGlobalSetting();
+            Reset();
+        }
+
+        public GameInstance(GlobalSetting globalSetting)
+        {
+            this.globalSetting = globalSetting;
             Reset();
         }
 
         public void Reset()
         {
             Status = GameStatus.Initial;
-            LoadGlobalSetting();
+            
             InitMessageQueue();
             InitCharacters();
             InitTeams();
-            InitFlags();            
+            InitFlags();
+            InitGameClients();
         }
 
         protected void LoadGlobalSetting()
@@ -77,22 +87,18 @@ namespace BarbelFlag
             flags = new List<Flag>();
             for (int i = 0; i < globalSetting.FlagCount; i++)
             {
-                flags.Add(new Flag(i, globalSetting.FlagTicksToCapture, GameMsgQueue));
+                flags.Add(new Flag(i, globalSetting.FlagTicksToCapture, MsgQ));
             }
         }
 
         protected void InitMessageQueue()
         {
-            GameMsgQueue = new MessageQueue();
+            MsgQ = new MessageQueue();
         }
 
-        public GameInstance(GlobalSetting globalSetting)
+        protected void InitGameClients()
         {
-            this.globalSetting = globalSetting;
-
-            InitCharacters();
-            InitTeams();
-            InitFlags();
+            gameClients = new Dictionary<int, GameClient>();
         }
 
         public AnswerBase HandleMessage(MessageBase message)
@@ -252,17 +258,32 @@ namespace BarbelFlag
         {
             foreach (var flag in flags) flag.Tick();
 
-            while (GameMsgQueue.Count > 0)
+            while (MsgQ.Count > 0)
             {
-                var message = (MessageBase)GameMsgQueue.Dequeue();
+                var message = (MessageBase)MsgQ.Dequeue();
 
-                HandleMessage(message);
+                var answer = HandleMessage(message);
+                TrySendAnswerToGameClient(message.SenderUserId, answer);
             }            
+        }
+
+        protected void TrySendAnswerToGameClient(int userId, AnswerBase answer)
+        {
+            if (userId <= 0) return;
+
+            if (!gameClients.TryGetValue(userId, out var client)) return;
+
+            client.HandleAnswer(answer);
         }
 
         public void Start()
         {
             Status = GameStatus.Started;
+        }
+
+        public void AddClient(GameClient client)
+        {
+            gameClients.Add(client.UserId, client);
         }
     }
 }

@@ -5,7 +5,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-organize Message / Answer from character's view
+refactoring: GameInstance
 refactoring: HandleMessage to message queue
 - async reply answer 
 
@@ -32,6 +32,7 @@ finish game when score reached limit
 limit flag ticks after game ends
 refactoring: flags ticks from GameInstance.Update()
 refactoring: flag status view data
+organize Message / Answer from character's view
 */
 
 namespace CoreTest
@@ -383,7 +384,7 @@ namespace CoreTest
         {
             game.Reset();
 
-            game.GameMsgQueue.EnqueueMessage(new MessageInitCharacter
+            game.MsgQ.EnqueueMessage(new MessageInitCharacter
             {
                 UserId = 1,
                 CharType = CharacterType.Ennfi,
@@ -428,7 +429,7 @@ namespace CoreTest
         {
             var flagId = 1;
 
-            game.GameMsgQueue.EnqueueMessage(new MessageStartCapture
+            game.MsgQ.EnqueueMessage(new MessageStartCapture
             {
                 Faction = faction,
                 FlagId = flagId
@@ -506,14 +507,14 @@ namespace CoreTest
 
         protected void AssignCharactersToTeams()
         {
-            game.GameMsgQueue.EnqueueMessage(new MessageInitCharacter
+            game.MsgQ.EnqueueMessage(new MessageInitCharacter
             {
                 UserId = 1,
                 CharType = CharacterType.Milli,
                 Faction = TeamFaction.Ciri
             });
 
-            game.GameMsgQueue.EnqueueMessage(new MessageInitCharacter
+            game.MsgQ.EnqueueMessage(new MessageInitCharacter
             {
                 UserId = 22,
                 CharType = CharacterType.Ennfi,
@@ -533,7 +534,7 @@ namespace CoreTest
 
         protected void CaptureFlag(TeamFaction faction, int flagId)
         {
-            game.GameMsgQueue.EnqueueMessage(new MessageStartCapture
+            game.MsgQ.EnqueueMessage(new MessageStartCapture
             {
                 Faction = faction,
                 FlagId = flagId
@@ -597,4 +598,41 @@ namespace CoreTest
             Assert.AreEqual(answer.Score, 90);
         }
     }
+
+    [TestClass]
+    public class GameClientTest
+    {
+        [TestMethod]
+        public void Test1CharacterEmpty()
+        {
+            var userId = 1;
+            var client = new GameClient(userId, new MessageQueue());
+
+            Assert.AreEqual(client.Character == null, true);
+        }
+
+        [TestMethod]
+        public void Test1InitCharacterToMessageQueue()
+        {
+            var game = new GameInstance(new GlobalSetting());
+
+            var userId = 1;
+            var client = new GameClient(userId, game.MsgQ);
+            game.AddClient(client);
+
+            var msgInitChar = new MessageInitCharacter
+            {
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Innfi,
+                UserId = userId,
+                SenderUserId = userId
+            };
+
+            client.SendDummyMessage(msgInitChar); //FIXME
+            game.Update();
+
+            Assert.AreEqual(client.Character.CharType, msgInitChar.CharType);
+        }
+    }
+
 }

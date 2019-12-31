@@ -25,6 +25,7 @@ namespace BarbelFlag
     public class MessageBase
     {
         public MessageType MsgType { get; protected set; }
+        public int SenderUserId;
     }
 
     public class AnswerBase

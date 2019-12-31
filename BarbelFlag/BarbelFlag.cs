@@ -45,4 +45,38 @@ namespace BarbelFlag
             Score += 10;
         }
     }
+
+    public class GameClient
+    {
+        public int UserId { get; protected set; }
+        public CharacterBase Character { get; protected set; }
+
+        protected MessageQueue msgQ;
+
+        public GameClient(int userId, MessageQueue queue)
+        {
+            UserId = userId;
+            msgQ = queue;
+        }
+
+        public void SendDummyMessage(MessageBase message)
+        {
+            msgQ.EnqueueMessage(message);
+        }
+
+        public void HandleAnswer(AnswerBase answer)
+        {
+            switch (answer.MsgType)
+            {
+                case MessageType.InitCharacter:
+                    HandleAnswerInitCharacter((AnswerInitCharacter)answer);
+                    return;
+            }
+        }
+
+        protected void HandleAnswerInitCharacter(AnswerInitCharacter answer)
+        {
+            Character = answer.Character;
+        }
+    }
 }
