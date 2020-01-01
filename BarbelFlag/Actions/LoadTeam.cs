@@ -15,7 +15,7 @@ namespace BarbelFlag
 
     public class AnswerLoadTeam : AnswerBase
     {
-        public Dictionary<int, CharacterBase> TeamMembers;
+        public Dictionary<int, GameClient> TeamMembers;
         public int Score;
 
         public AnswerLoadTeam()

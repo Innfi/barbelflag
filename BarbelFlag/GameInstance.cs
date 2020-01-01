@@ -25,7 +25,6 @@ namespace BarbelFlag
         
         protected GlobalSetting globalSetting;
         protected List<Flag> flags;
-        protected Dictionary<int, CharacterBase> characters;
         protected Team teamCiri;
         protected Team teamEredin;
 
@@ -51,7 +50,6 @@ namespace BarbelFlag
             Status = GameStatus.Initial;
             
             InitMessageQueue();
-            InitCharacters();
             InitTeams();
             InitFlags();
             InitGameClients();
@@ -63,11 +61,6 @@ namespace BarbelFlag
             {
                 MemberCount = 100
             };
-        }
-
-        protected void InitCharacters()
-        {
-            characters = new Dictionary<int, CharacterBase>();
         }
 
         protected void InitTeams()
@@ -124,15 +117,21 @@ namespace BarbelFlag
         {
             var msgInitCharacter = (MessageInitCharacter)message;
 
-            if (characters.TryGetValue(msgInitCharacter.UserId, out var character))
+            if (!gameClients.TryGetValue(msgInitCharacter.UserId, out var gameClient))
+            {
+                return new AnswerInitCharacter
+                {
+                    Code = ErrorCode.GameClientNotExist
+                };
+            }
+
+            if (gameClient.Character != null)
             {
                 return new AnswerInitCharacter
                 {
                     Code = ErrorCode.UserAlreadyRegistered
                 };
             }
-
-            character = GenCharacter(msgInitCharacter.CharType);
 
             var team = teamCiri;
             if (msgInitCharacter.Faction != TeamFaction.Ciri) team = teamEredin;
@@ -145,14 +144,14 @@ namespace BarbelFlag
                     UserId = msgInitCharacter.UserId
                 };
             }
-            team.AddMember(msgInitCharacter.UserId, character);
-            characters.Add(msgInitCharacter.UserId, character);
+
+            team.AddMember(gameClient.UserId, gameClient);
 
             return new AnswerInitCharacter
             {
                 Code = ErrorCode.Ok,
-                UserId = 1,
-                Character = character,
+                UserId = msgInitCharacter.UserId,
+                Character = GenCharacter(msgInitCharacter.CharType),
                 Faction = msgInitCharacter.Faction,
             };
         }

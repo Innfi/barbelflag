@@ -21,7 +21,7 @@ namespace BarbelFlag
 
         public TeamFaction Faction { get; protected set; }
         public int Score { get; private set; }
-        public Dictionary<int, CharacterBase> Members { get; protected set; }
+        public Dictionary<int, GameClient> Members { get; protected set; }
 
         protected GlobalSetting globalSetting;
         protected GameInstance gameInstance;
@@ -32,12 +32,12 @@ namespace BarbelFlag
             globalSetting = initializer.Setting;
             gameInstance = initializer.Game;
             Faction = initializer.Faction;
-            Members = new Dictionary<int, CharacterBase>();
+            Members = new Dictionary<int, GameClient>();
         }
 
-        public void AddMember(int userId, CharacterBase character)
+        public void AddMember(int userId, GameClient client)
         {
-            Members.Add(userId, character);
+            Members.Add(userId, client);
         }
 
         public void AddScore()
@@ -50,6 +50,7 @@ namespace BarbelFlag
     {
         public int UserId { get; protected set; }
         public CharacterBase Character { get; protected set; }
+        public AnswerBase LastAnswer { get; protected set; }
 
         protected MessageQueue msgQ;
 
@@ -66,6 +67,8 @@ namespace BarbelFlag
 
         public void HandleAnswer(AnswerBase answer)
         {
+            LastAnswer = answer;
+
             switch (answer.MsgType)
             {
                 case MessageType.InitCharacter:
