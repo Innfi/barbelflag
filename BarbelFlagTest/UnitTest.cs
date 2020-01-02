@@ -185,27 +185,43 @@ namespace CoreTest
             {
                 MemberCount = 5
             };
-
             var otherGame = new GameInstance(globalSetting);
-
             var faction = TeamFaction.Ciri;
-            var messages = GenerateDummyMsgInitChar(faction);
+            AddCharacters(otherGame, faction);
 
-            foreach (var message in messages)
+            var invalidUserId = 99;
+            var gameClient = new GameClient(invalidUserId, otherGame.MsgQ);
+            otherGame.AddClient(gameClient);
+            otherGame.MsgQ.EnqueueMessage(new MessageInitCharacter
             {
-                var answer = otherGame.HandleMessage(message);
-                Assert.AreEqual(answer.Code, ErrorCode.Ok);
-            }
-
-            var invalidMessage = new MessageInitCharacter
-            {
-                UserId = 99,
+                UserId = invalidUserId,
                 CharType = CharacterType.Innfi,
-                Faction = faction
-            };
+                Faction = faction,
+                SenderUserId = invalidUserId
+            });
+            otherGame.Update();
 
-            var invalidAnswer = otherGame.HandleMessage(invalidMessage);
-            Assert.AreEqual(invalidAnswer.Code, ErrorCode.TeamMemberCountLimit);
+            var lastAnswer = gameClient.LastAnswer;
+            Assert.AreEqual(lastAnswer.Code, ErrorCode.TeamMemberCountLimit);
+        }
+
+        protected void AddCharacters(GameInstance gameInstance, TeamFaction faction)
+        {
+            for (int i = 1; i < 6; i++)
+            {
+                gameInstance.AddClient(
+                new GameClient(i, gameInstance.MsgQ));
+
+                gameInstance.MsgQ.EnqueueMessage(new MessageInitCharacter
+                {
+                    UserId = i,
+                    Faction = faction,
+                    CharType = CharacterType.Innfi,
+                    SenderUserId = i
+                });
+
+                gameInstance.Update();
+            }
         }
 
         protected List<MessageInitCharacter> GenerateDummyMsgInitChar(TeamFaction faction)
@@ -463,34 +479,35 @@ namespace CoreTest
             game.Reset();
             Assert.AreEqual(game.Status, GameStatus.Initial);
 
-            var answer = game.HandleMessage(new MessageInitCharacter
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            game.AddClient(gameClient1);
+            game.MsgQ.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 1,
+                UserId = gameClient1.UserId,
                 CharType = CharacterType.Milli,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
-            Assert.AreEqual(answer.Code, ErrorCode.Ok);
+            game.Update();
+            Assert.AreEqual(gameClient1.LastAnswer.Code, ErrorCode.Ok);
 
-            var answer2 = game.HandleMessage(new MessageLoadTeam
-            {
-                Faction = TeamFaction.Ciri
-            });
-            Assert.AreEqual(answer2.Code, ErrorCode.Ok);
 
-            var msgStartCpature = new MessageStartCapture
+            var msgStartCapture = new MessageStartCapture
             {
                 FlagId = 1,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             };
-
-            var invalidAnswer = game.HandleMessage(msgStartCpature);
-            Assert.AreEqual(invalidAnswer.Code, ErrorCode.GameNotStarted);
+            game.MsgQ.EnqueueMessage(msgStartCapture);
+            game.Update();
+            Assert.AreEqual(gameClient1.LastAnswer.Code, ErrorCode.GameNotStarted);
 
             game.Start();
             Assert.AreEqual(game.Status, GameStatus.Started);
 
-            var startAnswer = game.HandleMessage(msgStartCpature);
-            Assert.AreEqual(startAnswer.Code, ErrorCode.Ok);
+            game.MsgQ.EnqueueMessage(msgStartCapture);
+            game.Update();
+            Assert.AreEqual(gameClient1.LastAnswer.Code, ErrorCode.Ok);
         }
 
         [TestMethod]
