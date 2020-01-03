@@ -94,7 +94,25 @@ namespace BarbelFlag
             gameClients = new Dictionary<int, GameClient>();
         }
 
-        public AnswerBase HandleMessage(MessageBase message)
+        public void EnqueueMessage(MessageBase message)
+        {
+            MsgQ.EnqueueMessage(message);
+        }
+
+        public void Update()
+        {
+            foreach (var flag in flags) flag.Tick();
+
+            while (MsgQ.Count > 0)
+            {
+                var message = (MessageBase)MsgQ.Dequeue();
+
+                var answer = HandleMessage(message);
+                TrySendAnswerToGameClient(message.SenderUserId, answer);
+            }            
+        }
+
+        protected AnswerBase HandleMessage(MessageBase message)
         {
             switch (message.MsgType)
             {
@@ -244,26 +262,13 @@ namespace BarbelFlag
             var scoreBefore = team.Score;
             team.AddScore();
 
-            if(team.Score >= globalSetting.WinScore) Status = GameStatus.End;
+            if (team.Score >= globalSetting.WinScore) Status = GameStatus.End;
 
             return new AnswerAddScore
             {
                 ScoreBefore = scoreBefore,
                 ScoreAfter = team.Score
             };
-        }
-
-        public void Update()
-        {
-            foreach (var flag in flags) flag.Tick();
-
-            while (MsgQ.Count > 0)
-            {
-                var message = (MessageBase)MsgQ.Dequeue();
-
-                var answer = HandleMessage(message);
-                TrySendAnswerToGameClient(message.SenderUserId, answer);
-            }            
         }
 
         protected void TrySendAnswerToGameClient(int userId, AnswerBase answer)
