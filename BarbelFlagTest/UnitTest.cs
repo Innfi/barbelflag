@@ -307,124 +307,146 @@ namespace CoreTest
             var answer = (AnswerGetFlagViews)client.LastAnswer;
             return answer.FlagViews;
         }
-        /*
+        
         [TestMethod]
         public void Test2InitFlags3OwnerTeamID()
         {
             game.Reset();
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            var gameClient2 = new GameClient(2, game.MsgQ);
+
+            game.AddClient(gameClient1);
+            game.AddClient(gameClient2);
+
             game.Start();
 
-            var initCharFromCiri = new MessageInitCharacter
+            game.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 1,
+                UserId = gameClient1.UserId,
                 CharType = CharacterType.Ennfi,
-                Faction = TeamFaction.Ciri
-            };
-            var initCharFromEredin = new MessageInitCharacter
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
+            });
+            game.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 2,
+                UserId = gameClient2.UserId,
                 CharType = CharacterType.Milli,
-                Faction = TeamFaction.Eredin
-            };
+                Faction = TeamFaction.Eredin,
+                SenderUserId = gameClient2.UserId
+            });
+            game.Update();
 
-            game.HandleMessage(initCharFromCiri);
-            game.HandleMessage(initCharFromEredin);
-
-            var flags = LoadFlagViews();
             var flagIndexCiri = 1;
             var flagIndexEredin = 4;
-
-            game.HandleMessage(new MessageStartCapture
+            game.EnqueueMessage(new MessageStartCapture
             {
-                FlagId = flags[flagIndexCiri].FlagId,
-                Faction = initCharFromCiri.Faction
+                FlagId = flagIndexCiri,
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
-            game.HandleMessage(new MessageStartCapture
+            game.EnqueueMessage(new MessageStartCapture
             {
-                FlagId = flags[flagIndexEredin].FlagId,
-                Faction = initCharFromEredin.Faction
+                FlagId = flagIndexEredin,
+                Faction = TeamFaction.Eredin,
+                SenderUserId = gameClient2.UserId
             });
+            game.Update();
 
-            var resultflags = LoadFlagViews();
+            var flagViews = LoadFlagViews(gameClient1);
             Assert.AreEqual(
-                resultflags[flagIndexCiri].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+                flagViews[flagIndexCiri].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             Assert.AreEqual(
-                resultflags[flagIndexCiri].OwnerTeamFaction, TeamFaction.Ciri);
+                flagViews[flagIndexCiri].OwnerTeamFaction, TeamFaction.Ciri);
 
             Assert.AreEqual(
-                resultflags[flagIndexEredin].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
+                flagViews[flagIndexEredin].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             Assert.AreEqual(
-                resultflags[flagIndexEredin].OwnerTeamFaction, TeamFaction.Eredin);
+                flagViews[flagIndexEredin].OwnerTeamFaction, TeamFaction.Eredin);
         }
-
+        
         [TestMethod]
         public void Test2DoneCaptureByFlagTicks()
         {
             game.Reset();
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            game.AddClient(gameClient1);
+
             game.Start();
-            game.HandleMessage(new MessageInitCharacter
+
+            game.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 1,
+                UserId = gameClient1.UserId,
                 CharType = CharacterType.Ennfi,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
+            game.Update();
 
             var index = 1;
-            game.HandleMessage(new MessageStartCapture
+            game.EnqueueMessage(new MessageStartCapture
             {
                 FlagId = index,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
+            game.Update();
 
-            var views = LoadFlagViews();
+            var views = LoadFlagViews(gameClient1);
             Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
             //TODO: ticks by internal handler
             for (var i = 0; i < 10; i++) game.Update();
 
-            views = LoadFlagViews();
+            views = LoadFlagViews(gameClient1);
             Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
         }
-
+        
         [TestMethod]
         public void Test2GetScoreByTicks()
         {
             game.Reset();
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            game.AddClient(gameClient1);
+
             game.Start();
-            game.HandleMessage(new MessageInitCharacter
+
+            game.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 1,
+                UserId = gameClient1.UserId,
                 CharType = CharacterType.Ennfi,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
-            
+            game.Update();
+
             var index = 1;
-            game.HandleMessage(new MessageStartCapture
+            game.EnqueueMessage(new MessageStartCapture
             {
                 FlagId = index,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
+            game.Update();
 
-            var answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
-            {
-                Faction = TeamFaction.Ciri
-            });
-
-            Assert.AreEqual(answerLoadTeam.Score, 0);
+            var views = LoadFlagViews(gameClient1);
+            Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Capturing);
 
             for (var i = 0; i < 10; i++) game.Update();
-
-            var views = LoadFlagViews();
+            views = LoadFlagViews(gameClient1);
             Assert.AreEqual(views[index].CaptureStatus, Flag.FlagCaptureStatus.Captured);
-            
-            for (var i = 0; i < 10; i++) game.Update();
 
-            answerLoadTeam = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            for (var i = 0; i < 10; i++) game.Update();
+            game.EnqueueMessage(new MessageLoadTeam
             {
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
             });
+            game.Update();
+
+            var answerLoadTeam = (AnswerLoadTeam)gameClient1.LastAnswer;
             Assert.AreEqual(answerLoadTeam.Score, 10);
         }
 
+        /*
         [TestMethod]
         public void Test3SendRaiseScoreFromFlagToTeam()
         {
