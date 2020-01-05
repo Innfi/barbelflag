@@ -446,55 +446,61 @@ namespace CoreTest
             Assert.AreEqual(answerLoadTeam.Score, 10);
         }
 
-        /*
         [TestMethod]
         public void Test3SendRaiseScoreFromFlagToTeam()
         {
             game.Reset();
+            var gameClient = new GameClient(1, game.MsgQ);
+            game.AddClient(gameClient);
+
             game.Start();
 
             var faction = TeamFaction.Eredin;
-            var capturedFlag = GetCapturedFlag(faction);
+            var capturedFlag = GetCapturedFlag(gameClient, faction);
             Assert.AreEqual(capturedFlag.OwnerTeamFaction, faction);
             Assert.AreEqual(capturedFlag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
 
-            TickToGenerateScore();
+            TickToChangeStatus();
             game.Update();
 
-            var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            game.EnqueueMessage(new MessageLoadTeam
             {
-                Faction = faction
+                Faction = faction,
+                SenderUserId = gameClient.UserId
             });
+            game.Update();
 
+            var answer = (AnswerLoadTeam)gameClient.LastAnswer;
             Assert.AreEqual(answer.Score, 10);
         }
 
-        protected FlagView GetCapturedFlag(TeamFaction faction)
+        protected FlagView GetCapturedFlag(GameClient gameClient, TeamFaction faction)
         {
             var flagId = 1;
-
             game.EnqueueMessage(new MessageStartCapture
             {
                 Faction = faction,
                 FlagId = flagId
             });
-
+            game.Update();
+            TickToChangeStatus();
             game.Update();
 
-            for (int i = 0; i < 10; i++) game.Update();
-
+            game.EnqueueMessage(new MessageGetFlagViews
+            {
+                SenderUserId = gameClient.UserId
+            });
             game.Update();
+            var answer = (AnswerGetFlagViews)gameClient.LastAnswer;
 
-            var answer = (AnswerGetFlagViews)game.HandleMessage(
-                new MessageGetFlagViews());
             return answer.FlagViews[flagId];
         }
 
-        protected void TickToGenerateScore()
+        protected void TickToChangeStatus()
         {
             for (int i = 0; i < 10; i++) game.Update();
         }
-
+        
         [TestMethod]
         public void Test4DenyStartCaptureBeforeGameStart()
         {
@@ -531,48 +537,53 @@ namespace CoreTest
             game.Update();
             Assert.AreEqual(gameClient1.LastAnswer.Code, ErrorCode.Ok);
         }
-
+        
         [TestMethod]
         public void Test5FinishGame()
         {
             game.Reset();
-            AssignCharactersToTeams();
-            game.Start();
-            
-            var faction = TeamFaction.Ciri;
-            var flagId = 4;
-            CaptureFlag(faction, flagId);
-
-            var views = GetFlagViews();
-            Assert.AreEqual(views[flagId].CaptureStatus, Flag.FlagCaptureStatus.Captured);
-
-            GenerateScoreToWin(views[flagId], globalSetting);            
-            Assert.AreEqual(game.Status, GameStatus.End);
-        }
-
-        protected void AssignCharactersToTeams()
-        {
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            var gameClient2 = new GameClient(2, game.MsgQ);
+            game.AddClient(gameClient1);
+            game.AddClient(gameClient2);
             game.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 1,
+                UserId = gameClient1.UserId,
                 CharType = CharacterType.Milli,
-                Faction = TeamFaction.Ciri
+                Faction = TeamFaction.Ciri,
             });
 
             game.EnqueueMessage(new MessageInitCharacter
             {
-                UserId = 22,
+                UserId = gameClient2.UserId,
                 CharType = CharacterType.Ennfi,
                 Faction = TeamFaction.Eredin
             });
 
             game.Update();
+            game.Start();
+            
+
+            var faction = TeamFaction.Ciri;
+            var flagId = 4;
+            CaptureFlag(faction, flagId);
+
+            var views = GetFlagViews(gameClient1);
+            Assert.AreEqual(views[flagId].CaptureStatus, Flag.FlagCaptureStatus.Captured);
+
+            GenerateScoreToWin(gameClient2, views[flagId], globalSetting);            
+            Assert.AreEqual(game.Status, GameStatus.End);
         }
 
-        protected List<FlagView> GetFlagViews()
+        protected List<FlagView> GetFlagViews(GameClient gameClient)
         {
-            var answer = (AnswerGetFlagViews)game.HandleMessage(
-                new MessageGetFlagViews());
+            game.EnqueueMessage(new MessageGetFlagViews
+            {
+                SenderUserId = gameClient.UserId
+            });
+            game.Update();
+
+            var answer = (AnswerGetFlagViews)gameClient.LastAnswer;
 
             return answer.FlagViews;
         }
@@ -589,27 +600,33 @@ namespace CoreTest
             for (int i = 0; i < 10; i++) game.Update();
         }
 
-        protected void GenerateScoreToWin(FlagView view, GlobalSetting globalSetting)
+        protected void GenerateScoreToWin(GameClient gameClient, FlagView view, 
+            GlobalSetting globalSetting)
         {
             var score = 0;
             var count = 0;
             while (score < globalSetting.WinScore || count < 20)
             {
-                TickToGenerateScore();
+                TickToChangeStatus();
                 game.Update();
 
-                var team = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+                game.EnqueueMessage(new MessageLoadTeam
                 {
-                    Faction = view.OwnerTeamFaction
+                    Faction = view.OwnerTeamFaction,
+                    SenderUserId = gameClient.UserId
                 });
+                game.Update();
 
-                score = team.Score;
+                var answer = (AnswerLoadTeam)gameClient.LastAnswer;
+
+
+                score = answer.Score;
                 count++;
             }
 
             game.Update();
         }
-
+        /*
         [TestMethod]
         public void Test5FlagTickBlockedAfterEnd()
         {
