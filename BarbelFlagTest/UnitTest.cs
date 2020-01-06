@@ -5,8 +5,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-refactoring: HandleMessage to message queue
-- async reply answer 
+refactoring: game loop interface
 refactoring: get GameClient from GameInstance
 character: position
 character: skill
@@ -36,6 +35,8 @@ refactoring: flags ticks from GameInstance.Update()
 refactoring: flag status view data
 organize Message / Answer from character's view
 refactoring: GameInstance
+refactoring: HandleMessage to message queue
+- async reply answer 
 */
 
 namespace CoreTest
@@ -626,12 +627,31 @@ namespace CoreTest
 
             game.Update();
         }
-        /*
+        
         [TestMethod]
         public void Test5FlagTickBlockedAfterEnd()
         {
             game.Reset();
-            AssignCharactersToTeams();
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            var gameClient2 = new GameClient(2, game.MsgQ);
+            game.AddClient(gameClient1);
+            game.AddClient(gameClient2);
+
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = gameClient1.UserId,
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Ennfi,
+                SenderUserId = gameClient1.UserId
+            });
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = gameClient2.UserId,
+                Faction = TeamFaction.Eredin,
+                CharType = CharacterType.Innfi,
+                SenderUserId = gameClient2.UserId
+            });
+            game.Update();
             game.Start();
 
             var flagIdCiri = 4;
@@ -639,27 +659,26 @@ namespace CoreTest
             CaptureFlag(TeamFaction.Ciri, flagIdCiri);
             CaptureFlag(TeamFaction.Eredin, flagIdEredin);
 
-            var flags = GetFlagViews();
-            GenerateScoreToWin(flags[flagIdCiri], globalSetting);
+            var flags = GetFlagViews(gameClient1);
+            GenerateScoreToWin(gameClient1, flags[flagIdCiri], globalSetting);
             Assert.AreEqual(game.Status, GameStatus.End);
 
-            var answerScore = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
+            game.EnqueueMessage(new MessageLoadTeam
             {
-                Faction = TeamFaction.Eredin
+                Faction = TeamFaction.Eredin,
+                SenderUserId = gameClient2.UserId
             });
-
-            Assert.AreEqual(answerScore.Score, 90);
-
-            TickToGenerateScore();
             game.Update();
-            var answer = (AnswerLoadTeam)game.HandleMessage(new MessageLoadTeam
-            {
-                Faction = TeamFaction.Eredin
-            });
 
-            Assert.AreEqual(answer.Score, 90);
+            var answerLoadTeam = (AnswerLoadTeam)gameClient2.LastAnswer;
+            Assert.AreEqual(answerLoadTeam.Score, 90);
+
+            TickToChangeStatus();
+            game.Update();
+
+            answerLoadTeam = (AnswerLoadTeam)gameClient2.LastAnswer;
+            Assert.AreEqual(answerLoadTeam.Score, 90);
         }
-        */
     }
 
     [TestClass]
@@ -698,4 +717,13 @@ namespace CoreTest
         }
     }
 
+    [TestClass]
+    public class GameLoopTest
+    {
+        [TestMethod]
+        public void Test1InitGameLoop()
+        {
+            //TODO
+        }
+    }
 }
