@@ -82,4 +82,30 @@ namespace BarbelFlag
             Character = answer.Character;
         }
     }
+
+    public class GameLoop
+    {
+        public int Counter;
+        public double FrameRateMs = 60.0 * 0.001;
+        public double ResultFrame = 0.0;
+
+        public GameLoop()
+        {
+            Counter = 0;
+        }
+
+        public void IncrementCounter()
+        {
+            Counter++;
+        }
+
+        public void DummyLoop()
+        {
+            while (Counter <= 60)
+            {
+                IncrementCounter();
+                ResultFrame += FrameRateMs;
+            }
+        }
+    }
 }

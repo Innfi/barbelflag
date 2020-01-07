@@ -723,7 +723,13 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitGameLoop()
         {
-            //TODO
+            var gameLoop = new GameLoop();
+            gameLoop.DummyLoop();
+
+            var strictInterval = gameLoop.FrameRateMs * 60.0;
+            var realInterval = gameLoop.ResultFrame;
+
+            Assert.AreEqual(strictInterval != realInterval, true);
         }
     }
 }
