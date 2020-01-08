@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
 
@@ -723,13 +724,36 @@ namespace CoreTest
         [TestMethod]
         public void Test1InitGameLoop()
         {
-            var gameLoop = new GameLoop();
-            gameLoop.DummyLoop();
+            var gameLoop = new GameLoop(() => 
+            {
+                Thread.Sleep(300);
+                return 0;
+            });
 
-            var strictInterval = gameLoop.FrameRateMs * 60.0;
-            var realInterval = gameLoop.ResultFrame;
+            var elapsed = gameLoop.LoopUnit();
 
-            Assert.AreEqual(strictInterval != realInterval, true);
+            Assert.AreEqual(PracticallyEquals(elapsed, 300), true);
+        }
+
+        [TestMethod]
+        public void Test2GameLoopNeedSleep()
+        {
+            var runTime = 500;
+            var gameLoop = new GameLoop(() =>
+            {
+                Thread.Sleep(runTime);
+                return 0;
+            });
+
+            var elapsed = gameLoop.LoopUnit();
+            Assert.AreEqual(PracticallyEquals(gameLoop.DeltaTime, 1000 - runTime), true);
+        }
+
+        protected bool PracticallyEquals(double lhs, double rhs)
+        {
+            var gap = lhs - rhs;
+
+            return (gap >= -5.0 && gap <= 5.0);
         }
     }
 }

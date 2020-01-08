@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 
 namespace BarbelFlag
@@ -85,27 +86,39 @@ namespace BarbelFlag
 
     public class GameLoop
     {
-        public int Counter;
-        public double FrameRateMs = 60.0 * 0.001;
-        public double ResultFrame = 0.0;
+        public delegate int UpdateDelegate();
+        protected UpdateDelegate updateDelegate;
+        protected Stopwatch watch;
+        public long DeltaTime { get; protected set; }
 
-        public GameLoop()
+
+        public GameLoop(UpdateDelegate callback)
         {
-            Counter = 0;
+            updateDelegate = callback;
+            watch = new Stopwatch();
         }
 
-        public void IncrementCounter()
+        public void MainLoop()
         {
-            Counter++;
+            watch.Start();
+
+            for(int i=0;i<60;i++) updateDelegate();
+
+            watch.Stop();
+
+            var loopElapsed = watch.ElapsedMilliseconds;
+            var gap = 1000 - loopElapsed;
         }
 
-        public void DummyLoop()
+        public long LoopUnit()
         {
-            while (Counter <= 60)
-            {
-                IncrementCounter();
-                ResultFrame += FrameRateMs;
-            }
+            watch.Start();
+            updateDelegate();
+            watch.Stop();
+
+            DeltaTime = watch.ElapsedMilliseconds;
+
+            return DeltaTime;
         }
     }
 }

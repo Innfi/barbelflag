@@ -99,7 +99,7 @@ namespace BarbelFlag
             MsgQ.EnqueueMessage(message);
         }
 
-        public void Update()
+        public int Update()
         {
             foreach (var flag in flags) flag.Tick();
 
@@ -109,7 +109,9 @@ namespace BarbelFlag
 
                 var answer = HandleMessage(message);
                 TrySendAnswerToGameClient(message.SenderUserId, answer);
-            }            
+            }
+
+            return 0;
         }
 
         protected AnswerBase HandleMessage(MessageBase message)
