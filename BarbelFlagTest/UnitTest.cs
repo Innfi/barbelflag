@@ -755,5 +755,27 @@ namespace CoreTest
 
             return (gap >= -5.0 && gap <= 5.0);
         }
+
+        [TestMethod]
+        public void Test3GameLoopSleep()
+        {
+            var counter = 0;
+            var gameLoop = new GameLoop(() => 
+            {
+                Thread.Sleep(1);
+                return counter++;
+            });
+
+            gameLoop.MainLoop();
+
+            Assert.AreEqual(counter, 60);
+            Assert.AreEqual(gameLoop.DeltaTime < 1000, true);
+        }
+
+        [TestMethod]
+        public void Test4DelayedLoop()
+        {
+
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Diagnostics;
 
 
@@ -89,17 +90,21 @@ namespace BarbelFlag
         public delegate int UpdateDelegate();
         protected UpdateDelegate updateDelegate;
         protected Stopwatch watch;
-        public long DeltaTime { get; protected set; }
+        public int DeltaTime { get; protected set; }
 
 
         public GameLoop(UpdateDelegate callback)
         {
+            DeltaTime = 0;
             updateDelegate = callback;
             watch = new Stopwatch();
         }
 
         public void MainLoop()
         {
+            if (DeltaTime >= 0) Thread.Sleep(DeltaTime);
+            DeltaTime = 0;
+
             watch.Start();
 
             for(int i=0;i<60;i++) updateDelegate();
@@ -107,7 +112,7 @@ namespace BarbelFlag
             watch.Stop();
 
             var loopElapsed = watch.ElapsedMilliseconds;
-            var gap = 1000 - loopElapsed;
+            DeltaTime += (int)(1000 - loopElapsed);
         }
 
         public long LoopUnit()
@@ -116,7 +121,7 @@ namespace BarbelFlag
             updateDelegate();
             watch.Stop();
 
-            DeltaTime = watch.ElapsedMilliseconds;
+            DeltaTime = (int)watch.ElapsedMilliseconds;
 
             return DeltaTime;
         }
