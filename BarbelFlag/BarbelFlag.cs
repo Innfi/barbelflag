@@ -91,6 +91,7 @@ namespace BarbelFlag
         protected UpdateDelegate updateDelegate;
         protected Stopwatch watch;
         public int DeltaTime { get; protected set; }
+        public bool IsRunning { get; protected set; }
 
 
         public GameLoop(UpdateDelegate callback)
@@ -98,6 +99,7 @@ namespace BarbelFlag
             DeltaTime = 0;
             updateDelegate = callback;
             watch = new Stopwatch();
+            IsRunning = true;
         }
 
         public void MainLoop()
@@ -124,6 +126,30 @@ namespace BarbelFlag
             DeltaTime = (int)watch.ElapsedMilliseconds;
 
             return DeltaTime;
+        }
+
+        public void MainLoop2()
+        {
+            while (IsRunning)
+            {
+                if (DeltaTime >= 0) Thread.Sleep(DeltaTime);
+                DeltaTime = 0;
+
+                LoopFragment(20);
+                //TODO: test hang
+                LoopFragment(20);
+                LoopFragment(20);
+
+                var loopElapsed = watch.ElapsedMilliseconds;
+                DeltaTime += (int)(1000 - loopElapsed);
+            }
+        }
+
+        protected void LoopFragment(int count)
+        {
+            watch.Start();
+            for (int i = 0; i < count; i++) updateDelegate();
+            watch.Stop();
         }
     }
 }
