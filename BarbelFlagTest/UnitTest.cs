@@ -775,7 +775,17 @@ namespace CoreTest
         [TestMethod]
         public void Test4DelayedLoop()
         {
+            var counter = 0;
+            var gameLoop = new GameLoop(() => 
+            {
+                Thread.Sleep(20);
+                return counter++;
+            });
 
+            gameLoop.MainLoop();
+
+            Assert.AreEqual(counter, 60);
+            Assert.AreEqual(gameLoop.DeltaTime < 0, true);
         }
     }
 }
