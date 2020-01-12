@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Diagnostics;
 
 
@@ -91,7 +92,8 @@ namespace BarbelFlag
         protected UpdateDelegate updateDelegate;
         protected Stopwatch watch;
         public int DeltaTime { get; protected set; }
-        public bool IsRunning { get; set; }
+        public bool IsRunning { get; protected set; }
+        protected Task task;
 
 
         public GameLoop(UpdateDelegate callback)
@@ -100,56 +102,37 @@ namespace BarbelFlag
             updateDelegate = callback;
             watch = new Stopwatch();
             IsRunning = false;
+            task = new Task(MainLoop);
+        }
+
+        public void Start()
+        {
+            IsRunning = true;
+            task.Start();
+        }
+
+        public void Stop()
+        {
+            IsRunning = false;
+            task.Wait();
         }
 
         public void MainLoop()
-        {
-            if (DeltaTime >= 0) Thread.Sleep(DeltaTime);
-            DeltaTime = 0;
-
-            watch.Start();
-
-            for(int i=0;i<60;i++) updateDelegate();
-
-            watch.Stop();
-
-            var loopElapsed = watch.ElapsedMilliseconds;
-            DeltaTime += (int)(1000 - loopElapsed);
-        }
-
-        public long LoopUnit()
-        {
-            watch.Start();
-            updateDelegate();
-            watch.Stop();
-
-            DeltaTime = (int)watch.ElapsedMilliseconds;
-
-            return DeltaTime;
-        }
-
-        public void MainLoop2()
         {
             while (IsRunning)
             {
                 if (DeltaTime >= 0) Thread.Sleep(DeltaTime);
                 DeltaTime = 0;
 
-                LoopFragment(20);
-                //TODO: test hang
-                LoopFragment(20);
-                LoopFragment(20);
+                watch.Start();
+
+                for (int i = 0; i < 60; i++) updateDelegate();
+
+                watch.Stop();
 
                 var loopElapsed = watch.ElapsedMilliseconds;
                 DeltaTime += (int)(1000 - loopElapsed);
             }
-        }
-
-        protected void LoopFragment(int count)
-        {
-            watch.Start();
-            for (int i = 0; i < count; i++) updateDelegate();
-            watch.Stop();
         }
     }
 }

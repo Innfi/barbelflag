@@ -7,8 +7,6 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-refactoring: game loop tests
-refactoring: game loop interface
 refactoring: get GameClient from GameInstance
 character: position
 character: skill
@@ -40,6 +38,8 @@ organize Message / Answer from character's view
 refactoring: GameInstance
 refactoring: HandleMessage to message queue
 - async reply answer 
+refactoring: game loop tests
+refactoring: game loop interface
 */
 
 namespace CoreTest
@@ -724,45 +724,10 @@ namespace CoreTest
     public class GameLoopTest
     {
         [TestMethod]
-        public void Test1InitGameLoop()
-        {
-            var gameLoop = new GameLoop(() => 
-            {
-                Thread.Sleep(300);
-                return 0;
-            });
-
-            var elapsed = gameLoop.LoopUnit();
-
-            Assert.AreEqual(PracticallyEquals(elapsed, 300), true);
-        }
-
-        [TestMethod]
-        public void Test2GameLoopNeedSleep()
-        {
-            var runTime = 500;
-            var gameLoop = new GameLoop(() =>
-            {
-                Thread.Sleep(runTime);
-                return 0;
-            });
-
-            var elapsed = gameLoop.LoopUnit();
-            Assert.AreEqual(PracticallyEquals(gameLoop.DeltaTime, 1000 - runTime), true);
-        }
-
-        protected bool PracticallyEquals(double lhs, double rhs)
-        {
-            var gap = lhs - rhs;
-
-            return (gap >= -5.0 && gap <= 5.0);
-        }
-
-        [TestMethod]
-        public void Test3GameLoopSleep()
+        public void Test1GameLoopSleep()
         {
             var counter = 0;
-            var gameLoop = new GameLoop(() => 
+            var gameLoop = new GameLoop(() =>
             {
                 Thread.Sleep(1);
                 return counter++;
@@ -775,10 +740,10 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test4DelayedLoop()
+        public void Test2DelayedLoop()
         {
             var counter = 0;
-            var gameLoop = new GameLoop(() => 
+            var gameLoop = new GameLoop(() =>
             {
                 Thread.Sleep(20);
                 return counter++;
@@ -791,7 +756,7 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test5LoopByTask()
+        public void Test3LoopByTask()
         {
             var counter = 0;
             var gameLoop = new GameLoop(() =>
@@ -800,18 +765,62 @@ namespace CoreTest
                 return counter++;
             });
 
-            var task = new Task(gameLoop.MainLoop2);
-
-            task.Start();
             Assert.AreEqual(counter, 0);
+            gameLoop.Start();
 
-            gameLoop.IsRunning = true;
             Thread.Sleep(2000);
-
-            gameLoop.IsRunning = false;
-            task.Wait();
-
+            gameLoop.Stop();
             Assert.AreEqual(counter > 0, true);
+        }
+    }
+
+    [TestClass]
+    public class GameInstanceTest2
+    {
+        public static GameInstance game;
+        public static GameLoop gameLoop;
+        public static GameClient specClient;
+
+        [ClassInitialize]
+        public static void ClassSetUp(TestContext context)
+        {
+            game = new GameInstance(new GlobalSetting());
+            specClient = new GameClient(999, game.MsgQ);
+            game.AddClient(specClient);
+
+            gameLoop = new GameLoop(game.Update);
+            gameLoop.Start();
+        }
+
+        [ClassCleanup]
+        public static void ClassCleanUp()
+        {
+            gameLoop.Stop();
+        }
+
+        [TestMethod]
+        public void Test1ReceiveResponseAsync()
+        {
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            game.AddClient(gameClient1);
+
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = gameClient1.UserId,
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Innfi,
+                SenderUserId = gameClient1.UserId
+            });
+
+            int count;
+            for (count = 0; count < 10000; count++)
+            {
+                if (gameClient1.LastAnswer != null) break;
+
+                Thread.Sleep(1);
+            }
+
+            Assert.AreEqual(gameClient1.LastAnswer.MsgType, MessageType.InitCharacter);
         }
     }
 }
