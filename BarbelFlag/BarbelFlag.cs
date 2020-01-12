@@ -91,7 +91,7 @@ namespace BarbelFlag
         protected UpdateDelegate updateDelegate;
         protected Stopwatch watch;
         public int DeltaTime { get; protected set; }
-        public bool IsRunning { get; protected set; }
+        public bool IsRunning { get; set; }
 
 
         public GameLoop(UpdateDelegate callback)
@@ -99,7 +99,7 @@ namespace BarbelFlag
             DeltaTime = 0;
             updateDelegate = callback;
             watch = new Stopwatch();
-            IsRunning = true;
+            IsRunning = false;
         }
 
         public void MainLoop()

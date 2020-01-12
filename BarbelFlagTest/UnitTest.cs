@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
 
 /*
 TODO
 --------------------------------------------------
+refactoring: game loop tests
 refactoring: game loop interface
 refactoring: get GameClient from GameInstance
 character: position
@@ -786,6 +788,30 @@ namespace CoreTest
 
             Assert.AreEqual(counter, 60);
             Assert.AreEqual(gameLoop.DeltaTime < 0, true);
+        }
+
+        [TestMethod]
+        public void Test5LoopByTask()
+        {
+            var counter = 0;
+            var gameLoop = new GameLoop(() =>
+            {
+                Thread.Sleep(1);
+                return counter++;
+            });
+
+            var task = new Task(gameLoop.MainLoop2);
+
+            task.Start();
+            Assert.AreEqual(counter, 0);
+
+            gameLoop.IsRunning = true;
+            Thread.Sleep(2000);
+
+            gameLoop.IsRunning = false;
+            task.Wait();
+
+            Assert.AreEqual(counter > 0, true);
         }
     }
 }
