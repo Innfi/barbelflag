@@ -822,5 +822,44 @@ namespace CoreTest
 
             Assert.AreEqual(gameClient1.LastAnswer.MsgType, MessageType.InitCharacter);
         }
+
+        [TestMethod]
+        public void Test2ReceiveResponseAsyncCapture()
+        {
+            game.Reset();
+
+            var gameClient1 = new GameClient(1, game.MsgQ);
+            game.AddClient(gameClient1);
+
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = gameClient1.UserId,
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Innfi,
+                SenderUserId = gameClient1.UserId
+            });
+
+            WaitForAnswer(gameClient1);
+
+            game.EnqueueMessage(new MessageStartCapture
+            {
+                Faction = TeamFaction.Ciri,
+                FlagId = 1
+            });
+        }
+
+        protected int WaitForAnswer(GameClient gameClient)
+        {
+            int count;
+
+            for (count = 0; count < 2000; count++)
+            {
+                if (gameClient.LastAnswer != null) break;
+
+                Thread.Sleep(1);
+            }
+
+            return count;
+        }
     }
 }
