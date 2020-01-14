@@ -724,39 +724,7 @@ namespace CoreTest
     public class GameLoopTest
     {
         [TestMethod]
-        public void Test1GameLoopSleep()
-        {
-            var counter = 0;
-            var gameLoop = new GameLoop(() =>
-            {
-                Thread.Sleep(1);
-                return counter++;
-            });
-
-            gameLoop.MainLoop();
-
-            Assert.AreEqual(counter, 60);
-            Assert.AreEqual(gameLoop.DeltaTime < 1000, true);
-        }
-
-        [TestMethod]
-        public void Test2DelayedLoop()
-        {
-            var counter = 0;
-            var gameLoop = new GameLoop(() =>
-            {
-                Thread.Sleep(20);
-                return counter++;
-            });
-
-            gameLoop.MainLoop();
-
-            Assert.AreEqual(counter, 60);
-            Assert.AreEqual(gameLoop.DeltaTime < 0, true);
-        }
-
-        [TestMethod]
-        public void Test3LoopByTask()
+        public void Test1LoopByTask()
         {
             var counter = 0;
             var gameLoop = new GameLoop(() =>
@@ -801,6 +769,7 @@ namespace CoreTest
         [TestMethod]
         public void Test1ReceiveResponseAsync()
         {
+            game.Reset();
             var gameClient1 = new GameClient(1, game.MsgQ);
             game.AddClient(gameClient1);
 
@@ -844,8 +813,23 @@ namespace CoreTest
             game.EnqueueMessage(new MessageStartCapture
             {
                 Faction = TeamFaction.Ciri,
-                FlagId = 1
+                FlagId = 1,
+                SenderUserId = gameClient1.UserId
             });
+
+            WaitForAnswer(gameClient1);
+
+            game.EnqueueMessage(new MessageGetFlagViews
+            {
+                SenderUserId = gameClient1.UserId
+            });
+
+            game.Update();
+
+            var answer = (AnswerGetFlagViews)gameClient1.LastAnswer;
+            var flag = answer.FlagViews[1];
+            Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
+            Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.Ciri);
         }
 
         protected int WaitForAnswer(GameClient gameClient)
