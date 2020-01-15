@@ -84,6 +84,12 @@ namespace BarbelFlag
         {
             Character = answer.Character;
         }
+
+        public void ClearLastAnswer()
+        {
+            //test method
+            LastAnswer = null;
+        }
     }
 
     public class GameLoop

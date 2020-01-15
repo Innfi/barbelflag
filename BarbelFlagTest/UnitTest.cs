@@ -7,6 +7,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
+bugfix: flag tick timer
 refactoring: get GameClient from GameInstance
 character: position
 character: skill
@@ -796,9 +797,9 @@ namespace CoreTest
         public void Test2ReceiveResponseAsyncCapture()
         {
             game.Reset();
-
             var gameClient1 = new GameClient(1, game.MsgQ);
             game.AddClient(gameClient1);
+            game.Start();
 
             game.EnqueueMessage(new MessageInitCharacter
             {
@@ -809,6 +810,7 @@ namespace CoreTest
             });
 
             WaitForAnswer(gameClient1);
+            gameClient1.ClearLastAnswer();
 
             game.EnqueueMessage(new MessageStartCapture
             {
@@ -818,6 +820,7 @@ namespace CoreTest
             });
 
             WaitForAnswer(gameClient1);
+            gameClient1.ClearLastAnswer();
 
             game.EnqueueMessage(new MessageGetFlagViews
             {
