@@ -10,6 +10,7 @@ namespace BarbelFlag
         GetFlagViews = 3,
         StartCapture = 4,
         AddScore = 5,
+        AddGameClient = 100,
     }
 
     public enum ErrorCode

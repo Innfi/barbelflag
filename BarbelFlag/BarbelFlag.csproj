@@ -63,6 +63,7 @@
     <Compile Include="Actions\GetFlagsStatus.cs" />
     <Compile Include="Actions\StartCapture.cs" />
     <Compile Include="BarbelFlag.cs" />
+    <Compile Include="Common\GameLoop.cs" />
     <Compile Include="Entities\Characters.cs" />
     <Compile Include="Actions\LoadTeam.cs" />
     <Compile Include="Common\MessageQueue.cs" />

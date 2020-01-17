@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
 
 /*
 TODO
 --------------------------------------------------
-bugfix: flag tick timer
-refactoring: get GameClient from GameInstance
 character: position
 character: skill
 
@@ -833,6 +830,17 @@ namespace CoreTest
             var flag = answer.FlagViews[1];
             Assert.AreEqual(flag.CaptureStatus, Flag.FlagCaptureStatus.Captured);
             Assert.AreEqual(flag.OwnerTeamFaction, TeamFaction.Ciri);
+
+            game.EnqueueMessage(new MessageLoadTeam
+            {
+                Faction = TeamFaction.Ciri,
+                SenderUserId = gameClient1.UserId
+            });
+
+            game.Update();
+
+            var answerLoadTeam = (AnswerLoadTeam)gameClient1.LastAnswer;
+            Assert.AreEqual(answerLoadTeam.Score > 0, true);
         }
 
         protected int WaitForAnswer(GameClient gameClient)
@@ -847,6 +855,28 @@ namespace CoreTest
             }
 
             return count;
+        }
+    }
+
+    [TestClass]
+    public class GameClientTest2
+    {
+        [TestMethod]
+        public void Test0EnqueMessageAddGameClient()
+        {
+            var game = new GameInstance();
+            var gameClient1 = new GameClient(1, game.MsgQ);
+
+            game.EnqueueMessage(new MessageAddGameClient
+            {
+                gameClient = gameClient1,
+                SenderUserId = gameClient1.UserId
+            });
+
+            game.Update();
+
+            var answer = gameClient1.LastAnswer;
+            Assert.AreEqual(answer.Code, ErrorCode.Ok);
         }
     }
 }
