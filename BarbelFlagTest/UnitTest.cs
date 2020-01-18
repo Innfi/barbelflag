@@ -865,7 +865,7 @@ namespace CoreTest
         public void Test0EnqueMessageAddGameClient()
         {
             var game = new GameInstance();
-            var gameClient1 = new GameClient(1, game.MsgQ);
+            var gameClient1 = new GameClient(1);
 
             game.EnqueueMessage(new MessageAddGameClient
             {
@@ -878,5 +878,11 @@ namespace CoreTest
             var answer = gameClient1.LastAnswer;
             Assert.AreEqual(answer.Code, ErrorCode.Ok);
         }
+    }
+
+    [TestClass]
+    public class GameMobileObjectTest
+    {
+
     }
 }

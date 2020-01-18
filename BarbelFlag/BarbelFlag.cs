@@ -57,6 +57,16 @@ namespace BarbelFlag
         public GameClient(int userId, MessageQueue queue)
         {
             UserId = userId;
+            SetMessageQueue(queue);
+        }
+
+        public GameClient(int userId)
+        {
+            UserId = userId;
+        }
+
+        public void SetMessageQueue(MessageQueue queue)
+        {
             msgQ = queue;
         }
 
@@ -98,4 +108,12 @@ namespace BarbelFlag
             MsgType = MessageType.AddGameClient;    
         }
     };
+
+    public class AnswerAddGameClient : AnswerBase
+    {
+        public AnswerAddGameClient()
+        {
+            MsgType = MessageType.AddGameClient;
+        }
+    }
 }

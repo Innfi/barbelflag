@@ -118,6 +118,8 @@ namespace BarbelFlag
         {
             switch (message.MsgType)
             {
+                case MessageType.AddGameClient:
+                    return HandleAddGameClient(message);
                 case MessageType.InitCharacter:
                     return HandleInitCharacter(message);
                 case MessageType.LoadTeam:
@@ -131,6 +133,20 @@ namespace BarbelFlag
                 default:
                     return new AnswerBase { Code = ErrorCode.InvalidMessageType };
             }
+        }
+
+        protected AnswerBase HandleAddGameClient(MessageBase message)
+        {
+            var msg = (MessageAddGameClient)message;
+            var gameClient = msg.gameClient;
+            gameClient.SetMessageQueue(MsgQ);
+
+            gameClients.Add(gameClient.UserId, gameClient);
+
+            return new AnswerAddGameClient
+            {
+                Code = ErrorCode.Ok
+            };
         }
 
         protected AnswerBase HandleInitCharacter(MessageBase message)
