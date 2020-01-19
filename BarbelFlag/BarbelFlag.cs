@@ -116,4 +116,18 @@ namespace BarbelFlag
             MsgType = MessageType.AddGameClient;
         }
     }
+
+    public class ObjectPosition
+    {
+        public double PosX;
+        public double PosY;
+        public double PosZ;
+
+        public ObjectPosition(double x, double y, double z)
+        {
+            PosX = x;
+            PosY = y;
+            PosZ = z;
+        }
+    }
 }

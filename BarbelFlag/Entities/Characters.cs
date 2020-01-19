@@ -16,6 +16,7 @@ namespace BarbelFlag
     public abstract class CharacterBase
     {
         public CharacterType CharType { get; protected set; }
+        public ObjectPosition Pos { get; protected set; }
 
         public int MoveSpeed;
         public int Health;
@@ -60,6 +61,7 @@ namespace BarbelFlag
             AutoRange = 20;
             AutoDamage = 15;
             AutoSpeed = 0.6f;
+            Pos = new ObjectPosition(0, 0, 0);
         }
     }
 }
