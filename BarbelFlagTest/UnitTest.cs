@@ -911,5 +911,35 @@ namespace CoreTest
             Assert.AreEqual(gameClient1.Character.Pos.PosY, defaultPos.PosY);
             Assert.AreEqual(gameClient1.Character.Pos.PosZ, defaultPos.PosZ);
         }
+
+        [TestMethod]
+        public void Test1CharacterDefaultPositionByFaction()
+        {
+            var game = new GameInstance();
+            var gameClient2 = new GameClient(2);
+
+            game.EnqueueMessage(new MessageAddGameClient
+            {
+                gameClient = gameClient2,
+                SenderUserId = gameClient2.UserId
+            });
+            game.Update();
+
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = gameClient2.UserId,
+                Faction = TeamFaction.Eredin,
+                CharType = CharacterType.Milli,
+                SenderUserId = gameClient2.UserId
+            });
+            game.Update();
+
+            Assert.AreEqual(gameClient2.Character != null, true);
+
+            var defaultPos = new ObjectPosition(999, 999, 999);
+            Assert.AreEqual(gameClient2.Character.Pos.PosX, defaultPos.PosX);
+            Assert.AreEqual(gameClient2.Character.Pos.PosY, defaultPos.PosY);
+            Assert.AreEqual(gameClient2.Character.Pos.PosZ, defaultPos.PosZ);
+        }
     }
 }
