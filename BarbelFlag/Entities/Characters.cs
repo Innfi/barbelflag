@@ -16,7 +16,7 @@ namespace BarbelFlag
     public abstract class CharacterBase
     {
         public CharacterType CharType { get; protected set; }
-        public ObjectPosition Pos { get; protected set; }
+        public ObjectPosition Pos { get; set; }
 
         public int MoveSpeed;
         public int Health;

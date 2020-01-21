@@ -59,6 +59,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\AddGameClient.cs" />
     <Compile Include="Actions\AddScore.cs" />
     <Compile Include="Actions\GetFlagsStatus.cs" />
     <Compile Include="Actions\StartCapture.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Actions\LoadTeam.cs" />
     <Compile Include="Common\MessageQueue.cs" />
     <Compile Include="Common\PacketBase.cs" />
+    <Compile Include="Entities\GameClient.cs" />
     <Compile Include="Entities\Flag.cs" />
     <Compile Include="GameInstance.cs" />
     <Compile Include="Actions\InitCharacter.cs" />

@@ -183,11 +183,21 @@ namespace BarbelFlag
 
             team.AddMember(gameClient.UserId, gameClient);
 
+            var character = GenCharacter(msgInitCharacter.CharType);
+            if (msgInitCharacter.Faction == TeamFaction.Ciri)
+            {
+                character.Pos = new ObjectPosition(0, 0, 0);
+            }
+            else
+            {
+                character.Pos = new ObjectPosition(999, 999, 999);
+            }
+
             return new AnswerInitCharacter
             {
                 Code = ErrorCode.Ok,
                 UserId = msgInitCharacter.UserId,
-                Character = GenCharacter(msgInitCharacter.CharType),
+                Character = character,
                 Faction = msgInitCharacter.Faction,
             };
         }

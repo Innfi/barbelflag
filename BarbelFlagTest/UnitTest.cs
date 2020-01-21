@@ -929,7 +929,7 @@ namespace CoreTest
             {
                 UserId = gameClient2.UserId,
                 Faction = TeamFaction.Eredin,
-                CharType = CharacterType.Milli,
+                CharType = CharacterType.Innfi,
                 SenderUserId = gameClient2.UserId
             });
             game.Update();
