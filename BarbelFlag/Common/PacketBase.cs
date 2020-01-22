@@ -10,6 +10,7 @@ namespace BarbelFlag
         GetFlagViews = 3,
         StartCapture = 4,
         AddScore = 5,
+        MoveCharacter = 6,
         AddGameClient = 100,
     }
 

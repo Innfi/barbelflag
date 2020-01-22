@@ -941,5 +941,37 @@ namespace CoreTest
             Assert.AreEqual(gameClient2.Character.Pos.PosY, defaultPos.PosY);
             Assert.AreEqual(gameClient2.Character.Pos.PosZ, defaultPos.PosZ);
         }
+
+        [TestMethod]
+        public void Test2CharacterMove()
+        {
+            var game = new GameInstance();
+            var gameClient1 = new GameClient(1);
+            game.EnqueueMessage(new MessageAddGameClient
+            {
+                gameClient = gameClient1,
+                SenderUserId = gameClient1.UserId
+            });
+            game.Update();
+
+            game.EnqueueMessage(new MessageInitCharacter
+            {
+                UserId = gameClient1.UserId,
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Innfi,
+                SenderUserId = gameClient1.UserId
+            });
+            game.Update();
+
+            var answer = (AnswerInitCharacter)gameClient1.LastAnswer;
+
+            game.EnqueueMessage(new MessageMoveCharacter
+            {
+                UserId = gameClient1.UserId,
+                BeforePos = answer.Character.Pos,
+                TargetPos = new ObjectPosition(5.0, 5.0, 5.0),
+                SenderUserId = gameClient1.UserId
+            });
+        }
     }
 }
