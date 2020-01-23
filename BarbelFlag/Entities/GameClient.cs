@@ -71,5 +71,12 @@ namespace BarbelFlag
             PosY = y;
             PosZ = z;
         }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = (ObjectPosition)obj;
+
+            return (PosX == rhs.PosX && PosY == rhs.PosY && PosZ == rhs.PosZ);
+        }
     }
 }

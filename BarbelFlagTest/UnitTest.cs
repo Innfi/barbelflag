@@ -937,9 +937,7 @@ namespace CoreTest
             Assert.AreEqual(gameClient2.Character != null, true);
 
             var defaultPos = new ObjectPosition(999, 999, 999);
-            Assert.AreEqual(gameClient2.Character.Pos.PosX, defaultPos.PosX);
-            Assert.AreEqual(gameClient2.Character.Pos.PosY, defaultPos.PosY);
-            Assert.AreEqual(gameClient2.Character.Pos.PosZ, defaultPos.PosZ);
+            Assert.AreEqual(gameClient2.Character.Pos, defaultPos);
         }
 
         [TestMethod]
@@ -947,31 +945,33 @@ namespace CoreTest
         {
             var game = new GameInstance();
             var gameClient1 = new GameClient(1);
-            game.EnqueueMessage(new MessageAddGameClient
+            game.EnqueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient1,
                 SenderUserId = gameClient1.UserId
             });
-            game.Update();
 
-            game.EnqueueMessage(new MessageInitCharacter
+            game.EnqueDebug(new MessageInitCharacter
             {
                 UserId = gameClient1.UserId,
                 Faction = TeamFaction.Ciri,
                 CharType = CharacterType.Innfi,
                 SenderUserId = gameClient1.UserId
             });
-            game.Update();
 
             var answer = (AnswerInitCharacter)gameClient1.LastAnswer;
+            var targetPos = new ObjectPosition(5.0, 5.0, 5.0);
 
-            game.EnqueueMessage(new MessageMoveCharacter
+            game.EnqueDebug(new MessageMoveCharacter
             {
                 UserId = gameClient1.UserId,
                 BeforePos = answer.Character.Pos,
-                TargetPos = new ObjectPosition(5.0, 5.0, 5.0),
+                TargetPos = targetPos,
                 SenderUserId = gameClient1.UserId
             });
+
+            var answerMove = (AnswerMoveCharacter)gameClient1.LastAnswer;
+            Assert.AreEqual(answerMove.ResultPos, targetPos);
         }
     }
 }

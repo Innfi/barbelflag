@@ -130,6 +130,8 @@ namespace BarbelFlag
                     return HandleStartCapture(message);
                 case MessageType.AddScore:
                     return HandleAddScore(message);
+                case MessageType.MoveCharacter:
+                    return HandleMoveCharacter(message);
                 default:
                     return new AnswerBase { Code = ErrorCode.InvalidMessageType };
             }
@@ -299,6 +301,24 @@ namespace BarbelFlag
             };
         }
 
+        protected AnswerBase HandleMoveCharacter(MessageBase message)
+        {
+            var msgMove = (MessageMoveCharacter)message;
+
+            if (!gameClients.TryGetValue(msgMove.UserId, out var gameClient))
+            {
+                //TODO: error handling
+            }
+
+            var character = gameClient.Character;
+            character.Pos = msgMove.TargetPos;
+
+            return new AnswerMoveCharacter
+            {
+                ResultPos = character.Pos
+            };
+        }
+
         protected void TrySendAnswerToGameClient(int userId, AnswerBase answer)
         {
             if (userId <= 0) return;
@@ -316,6 +336,12 @@ namespace BarbelFlag
         public void AddClient(GameClient client)
         {
             gameClients.Add(client.UserId, client);
+        }
+
+        public void EnqueDebug(MessageBase message)
+        {
+            EnqueueMessage(message);
+            Update();
         }
     }
 }
