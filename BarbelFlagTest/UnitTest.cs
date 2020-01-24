@@ -867,13 +867,11 @@ namespace CoreTest
             var game = new GameInstance();
             var gameClient1 = new GameClient(1);
 
-            game.EnqueueMessage(new MessageAddGameClient
+            game.EnqueueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient1,
                 SenderUserId = gameClient1.UserId
             });
-
-            game.Update();
 
             var answer = gameClient1.LastAnswer;
             Assert.AreEqual(answer.Code, ErrorCode.Ok);
@@ -888,28 +886,24 @@ namespace CoreTest
         {
             var game = new GameInstance();
             var gameClient1 = new GameClient(1);
-            game.EnqueueMessage(new MessageAddGameClient
+            game.EnqueueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient1,
                 SenderUserId = gameClient1.UserId
             });
-            game.Update();
 
-            game.EnqueueMessage(new MessageInitCharacter
+            game.EnqueueDebug(new MessageInitCharacter
             {
                 UserId = gameClient1.UserId,
                 Faction = TeamFaction.Ciri,
                 CharType = CharacterType.Innfi,
                 SenderUserId = gameClient1.UserId
             });
-            game.Update();
 
             Assert.AreEqual(gameClient1.Character != null, true);
 
             var defaultPos = new ObjectPosition(0, 0, 0);
-            Assert.AreEqual(gameClient1.Character.Pos.PosX, defaultPos.PosX);
-            Assert.AreEqual(gameClient1.Character.Pos.PosY, defaultPos.PosY);
-            Assert.AreEqual(gameClient1.Character.Pos.PosZ, defaultPos.PosZ);
+            Assert.AreEqual(gameClient1.Character.Pos, defaultPos);
         }
 
         [TestMethod]
@@ -918,21 +912,19 @@ namespace CoreTest
             var game = new GameInstance();
             var gameClient2 = new GameClient(2);
 
-            game.EnqueueMessage(new MessageAddGameClient
+            game.EnqueueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient2,
                 SenderUserId = gameClient2.UserId
             });
-            game.Update();
 
-            game.EnqueueMessage(new MessageInitCharacter
+            game.EnqueueDebug(new MessageInitCharacter
             {
                 UserId = gameClient2.UserId,
                 Faction = TeamFaction.Eredin,
                 CharType = CharacterType.Innfi,
                 SenderUserId = gameClient2.UserId
             });
-            game.Update();
 
             Assert.AreEqual(gameClient2.Character != null, true);
 
