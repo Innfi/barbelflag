@@ -64,4 +64,39 @@ namespace BarbelFlag
             Pos = new ObjectPosition(0, 0, 0);
         }
     }
+
+    public class CharacterFactory
+    {
+        public CharacterBase GenCharacter(CharacterType type)
+        {
+            switch (type)
+            {
+                case CharacterType.Innfi:
+                    return new CharacterInnfi();
+                case CharacterType.Ennfi:
+                    return new CharacterEnnfi();
+                case CharacterType.Milli:
+                    return new CharacterMilli();
+                default:
+                    return new CharacterInnfi();
+            }
+        }
+
+        public CharacterBase GenCharacter(MessageInitCharacter msg)
+        {
+            var character = GenCharacter(msg.CharType);
+            var faction = msg.Faction;
+
+            if(faction == TeamFaction.Ciri)
+            {
+                character.Pos = new ObjectPosition(0, 0, 0);
+            }
+            else
+            {
+                character.Pos = new ObjectPosition(999, 999, 999);
+            }
+
+            return character;
+        }
+    }
 }
