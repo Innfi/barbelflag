@@ -78,5 +78,10 @@ namespace BarbelFlag
 
             return (PosX == rhs.PosX && PosY == rhs.PosY && PosZ == rhs.PosZ);
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }
