@@ -311,7 +311,7 @@ namespace BarbelFlag
             }
 
             var character = gameClient.Character;
-            character.Pos = msgMove.TargetPos;
+            character.Move(msgMove.TargetPos);
 
             return new AnswerMoveCharacter
             {

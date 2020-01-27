@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace BarbelFlag
 {
     public enum CharacterType
@@ -23,6 +24,17 @@ namespace BarbelFlag
         public int AutoRange;
         public int AutoDamage;
         public float AutoSpeed;
+
+        public void Move(ObjectPosition targetPos)
+        {
+            var angle = (targetPos.PosX - Pos.PosX) / (targetPos.PosZ - Pos.PosZ);
+
+            var preValue = System.Math.Pow(MoveSpeed, 2);
+            preValue = preValue / (angle + 1);
+
+            Pos.PosX = System.Math.Sqrt(preValue);
+            Pos.PosZ = Pos.PosX * angle;
+        }
     }
 
     public class CharacterMilli : CharacterBase

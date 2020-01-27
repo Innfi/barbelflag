@@ -853,7 +853,7 @@ namespace CoreTest
             var game = new GameInstance();
             var gameClient1 = new GameClient(1);
 
-            game.EnqueueDebug(new MessageAddGameClient
+            game.EnqueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient1,
                 SenderUserId = gameClient1.UserId
@@ -867,18 +867,25 @@ namespace CoreTest
     [TestClass]
     public class GameMobileObjectTest
     {
-        [TestMethod]
-        public void Test0CharacterDefaultPosition()
+        public GameInstance game;
+        public GameClient gameClient1;
+
+        [TestInitialize]
+        public void SetUp()
         {
-            var game = new GameInstance();
-            var gameClient1 = new GameClient(1);
-            game.EnqueueDebug(new MessageAddGameClient
+            game = new GameInstance();
+            gameClient1 = new GameClient(1);
+            game.EnqueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient1,
                 SenderUserId = gameClient1.UserId
             });
+        }
 
-            game.EnqueueDebug(new MessageInitCharacter
+        [TestMethod]
+        public void Test0CharacterDefaultPosition()
+        {
+            game.EnqueDebug(new MessageInitCharacter
             {
                 UserId = gameClient1.UserId,
                 Faction = TeamFaction.Ciri,
@@ -895,16 +902,15 @@ namespace CoreTest
         [TestMethod]
         public void Test1CharacterDefaultPositionByFaction()
         {
-            var game = new GameInstance();
             var gameClient2 = new GameClient(2);
 
-            game.EnqueueDebug(new MessageAddGameClient
+            game.EnqueDebug(new MessageAddGameClient
             {
                 gameClient = gameClient2,
                 SenderUserId = gameClient2.UserId
             });
 
-            game.EnqueueDebug(new MessageInitCharacter
+            game.EnqueDebug(new MessageInitCharacter
             {
                 UserId = gameClient2.UserId,
                 Faction = TeamFaction.Eredin,
@@ -921,14 +927,6 @@ namespace CoreTest
         [TestMethod]
         public void Test2CharacterMove()
         {
-            var game = new GameInstance();
-            var gameClient1 = new GameClient(1);
-            game.EnqueDebug(new MessageAddGameClient
-            {
-                gameClient = gameClient1,
-                SenderUserId = gameClient1.UserId
-            });
-
             game.EnqueDebug(new MessageInitCharacter
             {
                 UserId = gameClient1.UserId,
@@ -950,6 +948,37 @@ namespace CoreTest
 
             var answerMove = (AnswerMoveCharacter)gameClient1.LastAnswer;
             Assert.AreEqual(answerMove.ResultPos, targetPos);
+        }
+
+        [TestMethod]
+        public void Test3CharacterMoveLimit()
+        {
+            game.EnqueDebug(new MessageInitCharacter
+            {
+                UserId = gameClient1.UserId,
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Innfi,
+                SenderUserId = gameClient1.UserId
+            });
+
+            var answer = (AnswerInitCharacter)gameClient1.LastAnswer;
+            Assert.AreEqual(answer.Character.Pos, new ObjectPosition(0.0f, 0.0f, 0.0f));
+
+            var characterMoveSpeed = answer.Character.MoveSpeed;
+
+            var distantPos = new ObjectPosition(500.0f, 0.0f, 500.0f);
+            game.EnqueDebug(new MessageMoveCharacter
+            {
+                UserId = gameClient1.UserId,
+                BeforePos = answer.Character.Pos,
+                TargetPos = distantPos,
+                SenderUserId = gameClient1.UserId
+            });
+            var answerMove = (AnswerMoveCharacter)(gameClient1.LastAnswer);
+            var resultPos = answerMove.ResultPos;
+
+            Assert.AreEqual(resultPos.PosX < distantPos.PosX, true);
+            Assert.AreEqual(resultPos.PosZ < distantPos.PosZ, true);
         }
     }
 }
