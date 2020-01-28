@@ -936,7 +936,7 @@ namespace CoreTest
             });
 
             var answer = (AnswerInitCharacter)gameClient1.LastAnswer;
-            var targetPos = new ObjectPosition(5.0, 5.0, 5.0);
+            var targetPos = new ObjectPosition(5.0, 0.0, 5.0);
 
             game.EnqueDebug(new MessageMoveCharacter
             {

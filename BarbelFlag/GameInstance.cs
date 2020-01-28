@@ -31,6 +31,7 @@ namespace BarbelFlag
         public MessageQueue MsgQ { get; protected set; }
 
         protected Dictionary<int, GameClient> gameClients;
+        protected CharacterFactory characterFactory;
 
 
         public GameInstance()
@@ -53,6 +54,7 @@ namespace BarbelFlag
             InitTeams();
             InitFlags();
             InitGameClients();
+            InitCharacterFactory();
         }
 
         protected void LoadGlobalSetting()
@@ -92,6 +94,11 @@ namespace BarbelFlag
         protected void InitGameClients()
         {
             gameClients = new Dictionary<int, GameClient>();
+        }
+
+        protected void InitCharacterFactory()
+        {
+            characterFactory = new CharacterFactory();
         }
 
         public void EnqueueMessage(MessageBase message)
@@ -185,7 +192,7 @@ namespace BarbelFlag
 
             team.AddMember(gameClient.UserId, gameClient);
 
-            var character = GenCharacter(msgInitCharacter.CharType);
+            var character = characterFactory.GenCharacter(msgInitCharacter.CharType);
             if (msgInitCharacter.Faction == TeamFaction.Ciri)
             {
                 character.Pos = new ObjectPosition(0, 0, 0);
@@ -202,21 +209,6 @@ namespace BarbelFlag
                 Character = character,
                 Faction = msgInitCharacter.Faction,
             };
-        }
-
-        protected CharacterBase GenCharacter(CharacterType type)
-        {
-            switch (type)
-            {
-                case CharacterType.Innfi:
-                    return new CharacterInnfi();
-                case CharacterType.Ennfi:
-                    return new CharacterEnnfi();
-                case CharacterType.Milli:
-                    return new CharacterMilli();
-                default:
-                    return new CharacterInnfi();
-            }
         }
 
         protected AnswerBase HandleLoadTeam(MessageBase message)
