@@ -27,6 +27,21 @@ namespace BarbelFlag
 
         public void Move(ObjectPosition targetPos)
         {
+            var distX = System.Math.Pow(targetPos.PosX - Pos.PosX, 2);
+            var distZ = System.Math.Pow(targetPos.PosZ - Pos.PosZ, 2);
+            var distance = System.Math.Sqrt(distX + distZ);
+
+            if (distance < MoveSpeed)
+            {
+                Pos = targetPos;
+                return;
+            }
+
+            MoveWithSpeed(targetPos);
+        }
+
+        public void MoveWithSpeed(ObjectPosition targetPos)
+        {
             var angle = (targetPos.PosX - Pos.PosX) / (targetPos.PosZ - Pos.PosZ);
 
             var preValue = System.Math.Pow(MoveSpeed, 2);

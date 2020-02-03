@@ -6,7 +6,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-character: position
+character: calculate position within server frame
 character: skill
 
 DONE
@@ -38,6 +38,7 @@ refactoring: HandleMessage to message queue
 - async reply answer 
 refactoring: game loop tests
 refactoring: game loop interface
+character: position
 */
 
 namespace CoreTest
@@ -979,6 +980,32 @@ namespace CoreTest
 
             Assert.AreEqual(resultPos.PosX < distantPos.PosX, true);
             Assert.AreEqual(resultPos.PosZ < distantPos.PosZ, true);
+        }
+
+        [TestMethod]
+        public void Test4Character2DMove()
+        {
+            game.EnqueDebug(new MessageInitCharacter
+            {
+                UserId = gameClient1.UserId,
+                Faction = TeamFaction.Ciri,
+                CharType = CharacterType.Innfi,
+                SenderUserId = gameClient1.UserId
+            });
+            var answer = (AnswerInitCharacter)gameClient1.LastAnswer;
+
+            var targetPos2D = new ObjectPosition(5.0f, 5.0f);
+            game.EnqueDebug(new MessageMoveCharacter
+            {
+                UserId = gameClient1.UserId,
+                BeforePos = answer.Character.Pos,
+                TargetPos = targetPos2D,
+                SenderUserId = gameClient1.UserId
+            });
+            var answerMove = (AnswerMoveCharacter)(gameClient1.LastAnswer);
+            var resultPos = answerMove.ResultPos;
+
+            Assert.AreEqual(resultPos, targetPos2D);
         }
     }
 }

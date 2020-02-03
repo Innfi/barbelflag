@@ -72,6 +72,13 @@ namespace BarbelFlag
             PosZ = z;
         }
 
+        public ObjectPosition(double x, double z)
+        {
+            PosX = x;
+            PosY = 0.0f;
+            PosZ = z;
+        }
+
         public override bool Equals(object obj)
         {
             var rhs = (ObjectPosition)obj;
