@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System;
 
 
 namespace BarbelFlag
@@ -12,7 +13,10 @@ namespace BarbelFlag
         protected Stopwatch watch;
         public int DeltaTime { get; protected set; }
         public bool IsRunning { get; protected set; }
+        protected long msPerFrame = (long)TimeSpan.FromSeconds(1 / 60).TotalMilliseconds;
+
         protected Task task;
+        
 
 
         public GameLoop(UpdateDelegate callback)
@@ -38,20 +42,26 @@ namespace BarbelFlag
 
         public void MainLoop()
         {
+            watch.Start();
+            var previous = watch.ElapsedMilliseconds;
+            var lag = 0.0;
+
             while (IsRunning)
-            {
-                if (DeltaTime >= 0) Thread.Sleep(DeltaTime);
-                DeltaTime = 0;
+            {                
+                var current = watch.ElapsedMilliseconds;
+                var elapsed = current - previous;
 
-                watch.Start();
+                previous = current;
+                lag += elapsed;
 
-                for (int i = 0; i < 60; i++) updateDelegate();
-
-                watch.Stop();
-
-                var loopElapsed = watch.ElapsedMilliseconds;
-                DeltaTime += (int)(1000 - loopElapsed);
+                while (lag * 100 >= 16)
+                {
+                    updateDelegate();
+                    lag -= 16;
+                }
             }
+
+            watch.Stop();
         }
     }
 }

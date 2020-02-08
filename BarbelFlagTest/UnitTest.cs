@@ -2,6 +2,7 @@
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
+using System.Diagnostics;
 
 /*
 TODO
@@ -725,9 +726,9 @@ namespace CoreTest
             Assert.AreEqual(counter, 0);
             gameLoop.Start();
 
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             gameLoop.Stop();
-            Assert.AreEqual(counter > 0, true);
+            Assert.AreEqual(counter >= 60 && counter <= 120, true);
         }
     }
 
