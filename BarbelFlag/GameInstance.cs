@@ -299,7 +299,10 @@ namespace BarbelFlag
 
             if (!gameClients.TryGetValue(msgMove.UserId, out var gameClient))
             {
-                //TODO: error handling
+                return new AnswerMoveCharacter
+                {
+                    Code = ErrorCode.InvalidUserId
+                };
             }
 
             var character = gameClient.Character;

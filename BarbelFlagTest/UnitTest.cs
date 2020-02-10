@@ -2,12 +2,11 @@
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
-using System.Diagnostics;
+
 
 /*
 TODO
 --------------------------------------------------
-character: calculate position within server frame
 character: skill
 
 DONE
@@ -40,6 +39,7 @@ refactoring: HandleMessage to message queue
 refactoring: game loop tests
 refactoring: game loop interface
 character: position
+character: calculate position within server frame
 */
 
 namespace CoreTest
@@ -1007,6 +1007,24 @@ namespace CoreTest
             var resultPos = answerMove.ResultPos;
 
             Assert.AreEqual(resultPos, targetPos2D);
+        }
+
+        [TestMethod]
+        public void Test5CharacterMoveInvalidUserId()
+        {
+            var invalidUserId = 999;
+
+            var targetPos2D = new ObjectPosition(5.0f, 5.0f);
+            game.EnqueDebug(new MessageMoveCharacter
+            {
+                UserId = invalidUserId,
+                BeforePos = new ObjectPosition(0.0f, 0.0f),
+                TargetPos = targetPos2D,
+                SenderUserId = gameClient1.UserId
+            });
+
+            var answerMove = (AnswerMoveCharacter)gameClient1.LastAnswer;
+            Assert.AreEqual(answerMove.Code, ErrorCode.InvalidUserId);
         }
     }
 }
