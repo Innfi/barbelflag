@@ -1027,4 +1027,35 @@ namespace CoreTest
             Assert.AreEqual(answerMove.Code, ErrorCode.InvalidUserId);
         }
     }
+
+    [TestClass]
+    public class SkillTest
+    {
+        [TestMethod]
+        public void Test0InitSkill()
+        {
+            var skill = new Skill();
+        }
+
+        [TestMethod]
+        public void Test1DummySkillType()
+        {
+            var skill = new SkillJumpToPosition();
+
+            Assert.AreEqual(skill.Type, SkillType.JumpToPosition);
+        }
+
+        [TestMethod]
+        public void Test2DummySkillInvoke()
+        {
+            var character = new CharacterInnfi();
+            character.Pos = new ObjectPosition(0.0f, 0.0f);
+            var targetPos = new ObjectPosition(100.0f, 100.0f);
+
+            var skill = new SkillJumpToPosition();
+            skill.Invoke(character, targetPos);
+
+            Assert.AreEqual(character.Pos, targetPos);
+        }
+    }
 }

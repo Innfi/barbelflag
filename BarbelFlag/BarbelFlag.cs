@@ -45,4 +45,31 @@ namespace BarbelFlag
             Score += 10;
         }
     }
+
+
+    public enum SkillType : int
+    {
+        EmptySkill = 0,
+        JumpToPosition = 1,
+    }
+
+    public class Skill
+    {
+
+    };
+
+    public class SkillJumpToPosition 
+    {
+        public SkillType Type;
+
+        public SkillJumpToPosition()
+        {
+            Type = SkillType.JumpToPosition;
+        }
+
+        public void Invoke(CharacterBase character, ObjectPosition pos)
+        {
+            character.Pos = pos;
+        }
+    };
 }
