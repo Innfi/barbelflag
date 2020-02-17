@@ -51,6 +51,7 @@ namespace BarbelFlag
     {
         EmptySkill = 0,
         JumpToPosition = 1,
+        SimpleDamange = 2,
     }
 
     public class Skill
@@ -72,4 +73,20 @@ namespace BarbelFlag
             character.Pos = pos;
         }
     };
+
+    public class SkillSimpleDamage
+    {
+        public SkillType Type;
+
+        public SkillSimpleDamage()
+        {
+            Type = SkillType.SimpleDamange;
+        }
+
+        public void Invoke(CharacterBase character, int damage)
+        {
+            character.Health -= damage;
+            if (character.Health <= 0) character.Health = 0;
+        }
+    }
 }

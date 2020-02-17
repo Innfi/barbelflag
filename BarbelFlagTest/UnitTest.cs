@@ -1057,5 +1057,17 @@ namespace CoreTest
 
             Assert.AreEqual(character.Pos, targetPos);
         }
+
+        [TestMethod]
+        public void Test3DummySkillSimpleDamageInvoke()
+        {
+            var character = new CharacterInnfi();
+            Assert.AreEqual(character.Health > 0, true);
+
+            var skill = new SkillSimpleDamage();
+            skill.Invoke(character, 1000000);
+
+            Assert.AreEqual(character.Health, 0);
+        }
     }
 }
