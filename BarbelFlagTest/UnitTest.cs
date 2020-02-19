@@ -7,6 +7,7 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
+character: status effect
 character: skill
 
 DONE
@@ -1025,6 +1026,33 @@ namespace CoreTest
 
             var answerMove = (AnswerMoveCharacter)gameClient1.LastAnswer;
             Assert.AreEqual(answerMove.Code, ErrorCode.InvalidUserId);
+        }
+    }
+
+    [TestClass]
+    public class StatusEffectTest
+    {
+        [TestMethod]
+        public void Test0CallStatusEffect()
+        {
+            var effect = new StatusEffect();
+        }
+
+        [TestMethod]
+        public void Test1StatusEffectDamageOverTime()
+        {
+            var targetPlayer = new CharacterEnnfi();
+
+            var effect = new StatusEffectDoT();
+            effect.Victim = targetPlayer;
+            effect.TickCount = 10;
+            effect.TickDamage = 1;
+            effect.CurrentTick = 0;
+
+            var healthBefore = targetPlayer.Health;
+            effect.TakeEffect();
+
+            Assert.AreEqual(targetPlayer.Health, healthBefore - effect.TickDamage);
         }
     }
 

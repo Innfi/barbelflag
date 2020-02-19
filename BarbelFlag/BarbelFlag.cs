@@ -89,4 +89,23 @@ namespace BarbelFlag
             if (character.Health <= 0) character.Health = 0;
         }
     }
+
+    public class StatusEffect
+    {
+
+    }
+
+    public class StatusEffectDoT
+    {
+        public CharacterBase Victim;
+        public int TickCount;
+        public int TickDamage;
+        public int CurrentTick;
+
+        public void TakeEffect()
+        {
+            Victim.Health -= TickDamage;
+            CurrentTick++;
+        }
+    }
 }
