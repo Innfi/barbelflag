@@ -21,6 +21,7 @@ namespace BarbelFlag
 
         public int MoveSpeed;
         public int Health;
+        public int CurrentHealth;
         public int AutoRange;
         public int AutoDamage;
         public float AutoSpeed;
@@ -59,6 +60,7 @@ namespace BarbelFlag
             CharType = CharacterType.Milli;
             MoveSpeed = 30;
             Health = 150;
+            CurrentHealth = 150;
             AutoRange = 20;
             AutoDamage = 10;
             AutoSpeed = 0.5f;
@@ -72,6 +74,7 @@ namespace BarbelFlag
             CharType = CharacterType.Ennfi;
             MoveSpeed = 35;
             Health = 100;
+            CurrentHealth = 100;
             AutoRange = 30;
             AutoDamage = 10;
             AutoSpeed = 0.7f;
@@ -85,6 +88,7 @@ namespace BarbelFlag
             CharType = CharacterType.Innfi;
             MoveSpeed = 25;
             Health = 200;
+            CurrentHealth = 200;
             AutoRange = 20;
             AutoDamage = 15;
             AutoSpeed = 0.6f;

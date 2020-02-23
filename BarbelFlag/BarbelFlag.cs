@@ -97,14 +97,42 @@ namespace BarbelFlag
 
     public class StatusEffectDoT
     {
-        public CharacterBase Victim;
+        public bool EffectDone
+        {
+            get { return CurrentTick >= TickCount; }
+        }
+
+        public CharacterBase Target;
         public int TickCount;
         public int TickDamage;
         public int CurrentTick;
 
         public void TakeEffect()
         {
-            Victim.Health -= TickDamage;
+            if (EffectDone) return;
+
+            Target.CurrentHealth -= TickDamage;
+            CurrentTick++;
+        }
+    }
+
+    public class StatusEffectHoT
+    {
+        public bool EffectDone
+        {
+            get { return CurrentTick >= TickCount; }
+        }
+
+        public CharacterBase Target;
+        public int TickCount;
+        public int TickHeal;
+        public int CurrentTick;
+
+        public void TakeEffect()
+        {
+            if (EffectDone) return;
+
+            Target.CurrentHealth += TickHeal;
             CurrentTick++;
         }
     }

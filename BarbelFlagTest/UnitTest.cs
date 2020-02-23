@@ -1039,20 +1039,56 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test1StatusEffectDamageOverTime()
+        public void Test1DamageOverTime()
         {
-            var targetPlayer = new CharacterEnnfi();
+            var targetCharacter = new CharacterEnnfi();
 
             var effect = new StatusEffectDoT();
-            effect.Victim = targetPlayer;
+            effect.Target = targetCharacter;
             effect.TickCount = 10;
             effect.TickDamage = 1;
             effect.CurrentTick = 0;
 
-            var healthBefore = targetPlayer.Health;
+            var healthBefore = targetCharacter.CurrentHealth;
             effect.TakeEffect();
 
-            Assert.AreEqual(targetPlayer.Health, healthBefore - effect.TickDamage);
+            Assert.AreEqual(targetCharacter.CurrentHealth, 
+                healthBefore - effect.TickDamage);
+        }
+
+        [TestMethod]
+        public void Test1DoTEffectOver()
+        {
+            var targetCharacter = new CharacterEnnfi();
+            var effect = new StatusEffectDoT();
+            effect.Target = targetCharacter;
+            effect.TickCount = 10;
+            effect.TickDamage = 1;
+            effect.CurrentTick = 0;
+
+            for (int i = 0; i < effect.TickCount+20; i++) effect.TakeEffect();
+
+            Assert.AreEqual(effect.CurrentTick, effect.TickCount);
+            Assert.AreEqual(effect.EffectDone, true);
+        }
+
+        [TestMethod]
+        public void Test2HealOverTime()
+        {
+            var targetPlayer = new CharacterInnfi();
+            targetPlayer.CurrentHealth = (int)targetPlayer.CurrentHealth / 2;
+
+            var effect = new StatusEffectHoT();
+            effect.Target = targetPlayer;
+            effect.TickCount = 5;
+            effect.TickHeal = 10;
+            effect.CurrentTick = 0;
+
+            var healthBefore = targetPlayer.CurrentHealth;
+
+            effect.TakeEffect();
+            Assert.AreEqual(targetPlayer.CurrentHealth,
+                healthBefore + effect.TickHeal);
         }
     }
 
