@@ -18,6 +18,7 @@ namespace BarbelFlag
     {
         public CharacterType CharType { get; protected set; }
         public ObjectPosition Pos { get; set; }
+        public bool Isdead { get { return CurrentHealth <= 0; } }
 
         public int MoveSpeed;
         public int Health;
@@ -50,6 +51,24 @@ namespace BarbelFlag
 
             Pos.PosX = System.Math.Sqrt(preValue);
             Pos.PosZ = Pos.PosX * angle;
+        }
+
+        public void DamageHP(int damage)
+        {
+            if (Isdead) return;
+
+            CurrentHealth -= damage;
+        }
+
+        public void HealHP(int heal)
+        {
+            if (Isdead) return;
+
+            var afterHealth = CurrentHealth + heal;
+            if (afterHealth > Health) CurrentHealth = Health;
+
+            CurrentHealth = afterHealth;
+            return;
         }
     }
 

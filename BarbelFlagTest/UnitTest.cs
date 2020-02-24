@@ -1033,12 +1033,6 @@ namespace CoreTest
     public class StatusEffectTest
     {
         [TestMethod]
-        public void Test0CallStatusEffect()
-        {
-            var effect = new StatusEffect();
-        }
-
-        [TestMethod]
         public void Test1DamageOverTime()
         {
             var targetCharacter = new CharacterEnnfi();
