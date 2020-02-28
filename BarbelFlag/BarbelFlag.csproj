@@ -74,6 +74,7 @@
     <Compile Include="GameInstance.cs" />
     <Compile Include="Actions\InitCharacter.cs" />
     <Compile Include="Actions\MoveCharacter.cs" />
+    <Compile Include="StatusEffects\StatusEffects.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

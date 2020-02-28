@@ -1084,6 +1084,30 @@ namespace CoreTest
             Assert.AreEqual(targetPlayer.CurrentHealth,
                 healthBefore + effect.TickHeal);
         }
+
+        [TestMethod]
+        public void Test3AttackDamageBuff()
+        {            
+            var targetCharacter = new CharacterMilli();
+            var ADBefore = targetCharacter.AutoDamage;
+
+            var targets = new List<CharacterBase>();
+            targets.Add(targetCharacter);
+
+            var effect = new StatusEffectDamageBuff
+            {
+                Targets = targets.ToArray(),
+                TickCount = 10,
+                CurrentTick = 0,
+                BuffAmount = 200
+            };
+
+            for(int i=0;i<effect.TickCount - 1;i++) effect.TakeEffect();
+
+            Assert.AreEqual(targetCharacter.AutoDamage, ADBefore + effect.BuffAmount);
+            effect.TakeEffect();
+            Assert.AreEqual(targetCharacter.AutoDamage, ADBefore);
+        }
     }
 
     [TestClass]
