@@ -87,4 +87,41 @@ namespace BarbelFlag
             }
         }
     }
+
+    public class StatusEffectHPBuff : StatusEffect
+    {
+        public CharacterBase[] Targets;
+        public int TickCount;
+        public int CurrentTick;
+        public int BuffAmount;
+
+        public override bool EffectDone
+        {
+            get
+            {
+                return CurrentTick >= TickCount;
+            }
+        }
+
+        public override void TakeEffect()
+        {
+            if (CurrentTick == 0)
+            {
+                foreach (var target in Targets)
+                {
+                    target.CurrentHealth += BuffAmount;
+                }
+            }
+
+            CurrentTick++;
+
+            if (EffectDone)
+            {
+                foreach (var target in Targets)
+                {
+                    target.CurrentHealth -= BuffAmount;
+                }
+            }
+        }
+    }
 }

@@ -7,7 +7,8 @@ using BarbelFlag;
 /*
 TODO
 --------------------------------------------------
-character: status effect
+character: status effect (initial)
+character: status effect parser
 character: skill
 
 DONE
@@ -1107,6 +1108,35 @@ namespace CoreTest
             Assert.AreEqual(targetCharacter.AutoDamage, ADBefore + effect.BuffAmount);
             effect.TakeEffect();
             Assert.AreEqual(targetCharacter.AutoDamage, ADBefore);
+        }
+
+        [TestMethod]
+        public void Test4HPBuff()
+        {
+            var targetCharacter = new CharacterMilli();
+            targetCharacter.CurrentHealth = targetCharacter.CurrentHealth / 2;
+            var healthBefore = targetCharacter.CurrentHealth;
+
+            var targets = new List<CharacterBase>();
+            targets.Add(targetCharacter);
+
+            var effect = new StatusEffectHPBuff
+            {
+                Targets = targets.ToArray(),
+                TickCount = 5,
+                CurrentTick = 0,
+                BuffAmount = 10
+            };
+            effect.TakeEffect();
+
+            Assert.AreEqual(targetCharacter.CurrentHealth,
+                healthBefore + effect.BuffAmount);
+        }
+
+        [TestMethod]
+        public void Test4HPBuffExceedinglimit()
+        {
+
         }
     }
 
