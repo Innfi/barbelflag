@@ -105,6 +105,8 @@ namespace BarbelFlag
 
         public override void TakeEffect()
         {
+            if (EffectDone) return;
+
             if (CurrentTick == 0)
             {
                 foreach (var target in Targets)

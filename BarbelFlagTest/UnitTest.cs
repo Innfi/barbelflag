@@ -1136,8 +1136,31 @@ namespace CoreTest
         [TestMethod]
         public void Test4HPBuffExceedinglimit()
         {
+            var targetCharacter = new CharacterMilli();
+            var healthBefore = targetCharacter.CurrentHealth;
 
+            var targets = new List<CharacterBase>();
+            targets.Add(targetCharacter);
+
+            var effect = new StatusEffectHPBuff
+            {
+                Targets = targets.ToArray(),
+                TickCount = 5,
+                CurrentTick = 0,
+                BuffAmount = 10
+            };
+            effect.TakeEffect();
+            Assert.AreEqual(targetCharacter.CurrentHealth, 
+                healthBefore +  effect.BuffAmount);
+
+            for (int i = 0; i < effect.TickCount; i++) effect.TakeEffect();
+
+            Assert.AreEqual(targetCharacter.CurrentHealth, healthBefore);
         }
+
+        [TestMethod]
+        public void Test5StatusEffectParser()
+        { }
     }
 
     [TestClass]
