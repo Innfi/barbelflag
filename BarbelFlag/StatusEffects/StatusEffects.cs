@@ -126,4 +126,19 @@ namespace BarbelFlag
             }
         }
     }
+
+    public class TestClass
+    {
+        public string EffectName = "DummyDoT";
+        public int TickCount = 10;
+        public int TickDamage = 12;
+    }
+
+    public class StatusEffectParser
+    {
+        public void Parse(string description)
+        {
+
+        }
+    }
 }

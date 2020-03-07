@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BarbelFlag;
-
+using Newtonsoft.Json;
+using System.IO;
 
 /*
 TODO
@@ -1160,7 +1162,33 @@ namespace CoreTest
 
         [TestMethod]
         public void Test5StatusEffectParser()
-        { }
+        {
+            var description = GenerateDummySEDescription();
+        }
+
+        protected string GenerateDummySEDescription()
+        {
+            StringBuilder sb = new StringBuilder();
+            StringWriter sw = new StringWriter();
+
+            using (var writer = new JsonTextWriter(sw))
+            {
+                writer.Formatting = Formatting.Indented;
+                writer.WriteStartObject();
+
+                writer.WritePropertyName("EffectName");
+                writer.WriteValue("DummyDoT");
+                writer.WritePropertyName("TickCount");
+                writer.WriteValue("10");
+                writer.WritePropertyName("TickDamage");
+                writer.WriteValue("12");
+
+                writer.WriteEnd();
+                writer.WriteEndObject();
+            }
+
+            return sb.ToString();
+        }
     }
 
     [TestClass]
