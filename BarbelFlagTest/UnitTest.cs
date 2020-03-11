@@ -1161,29 +1161,39 @@ namespace CoreTest
         }
 
         [TestMethod]
-        public void Test5StatusEffectParser()
+        public void Test5StatusEffectParser1ReadDescription()
         {
+            var descInstance = new EffectDescription();
+
             var description = GenerateDummySEDescription();
+            var resultInstance =
+                JsonConvert.DeserializeObject<EffectDescription>(description);
+
+            Assert.AreEqual(descInstance, resultInstance);
         }
 
         protected string GenerateDummySEDescription()
         {
             StringBuilder sb = new StringBuilder();
-            StringWriter sw = new StringWriter();
+            StringWriter sw = new StringWriter(sb);
 
             using (var writer = new JsonTextWriter(sw))
             {
-                writer.Formatting = Formatting.Indented;
                 writer.WriteStartObject();
 
                 writer.WritePropertyName("EffectName");
-                writer.WriteValue("DummyDoT");
+                writer.WriteValue("StatusEffectDoT");
                 writer.WritePropertyName("TickCount");
-                writer.WriteValue("10");
-                writer.WritePropertyName("TickDamage");
-                writer.WriteValue("12");
+                writer.WriteValue(10);
+                writer.WritePropertyName("EffectAmount");
+                writer.WriteValue(12);
+                writer.WritePropertyName("TargetEntity");
+                writer.WriteValue("CharacterBase");
+                writer.WritePropertyName("TargetStat");
+                writer.WriteValue("Health");
+                writer.WritePropertyName("Action");
+                writer.WriteValue("Increase");
 
-                writer.WriteEnd();
                 writer.WriteEndObject();
             }
 

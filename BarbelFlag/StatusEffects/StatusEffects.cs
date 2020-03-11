@@ -127,11 +127,36 @@ namespace BarbelFlag
         }
     }
 
-    public class TestClass
+    public class EffectDescription
     {
-        public string EffectName = "DummyDoT";
+        public string EffectName = "StatusEffectDoT";
         public int TickCount = 10;
-        public int TickDamage = 12;
+        public int EffectAmount = 12;
+        public string TargetEntity = "CharacterBase";
+        public string TargetStat = "Health";
+        public string Action = "Increase";
+
+        public override bool Equals(object obj)
+        {
+            if ((obj == null)) return false;
+            if (!this.GetType().Equals(obj.GetType())) return false;
+
+            var rhs = (EffectDescription)obj;
+
+            if (EffectName != rhs.EffectName) return false;
+            if (TickCount != rhs.TickCount) return false;
+            if (EffectAmount != rhs.EffectAmount) return false;
+            if (TargetEntity != rhs.TargetEntity) return false;
+            if (TargetStat != rhs.TargetStat) return false;
+            if (Action != rhs.Action) return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     public class StatusEffectParser
