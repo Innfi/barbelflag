@@ -9,7 +9,6 @@ using System.IO;
 /*
 TODO
 --------------------------------------------------
-character: status effect (initial)
 character: status effect parser
 character: skill
 
@@ -44,6 +43,8 @@ refactoring: game loop tests
 refactoring: game loop interface
 character: position
 character: calculate position within server frame
+character: status effect (initial)
+
 */
 
 namespace CoreTest
@@ -1159,9 +1160,13 @@ namespace CoreTest
 
             Assert.AreEqual(targetCharacter.CurrentHealth, healthBefore);
         }
+    }
 
+    [TestClass]
+    public class StatusEffectParserTest
+    {
         [TestMethod]
-        public void Test5StatusEffectParser1ReadDescription()
+        public void Test1ReadDescription()
         {
             var descInstance = new EffectDescription();
 
@@ -1198,6 +1203,17 @@ namespace CoreTest
             }
 
             return sb.ToString();
+        }
+
+        [TestMethod]
+        public void Test2ParseDescription()
+        {
+            var descriptionJson = GenerateDummySEDescription();
+            var parser = new StatusEffectParser();
+
+            var result = parser.Parse(descriptionJson, out var effect);
+            Assert.AreEqual(result, true);
+            Assert.AreEqual(effect.EffectName, "StatusEffectDoT");
         }
     }
 

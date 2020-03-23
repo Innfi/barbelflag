@@ -5,6 +5,8 @@ namespace BarbelFlag
 {
     public abstract class StatusEffect
     {
+        public string EffectName;
+
         public abstract bool EffectDone { get; }
         public abstract void TakeEffect();
     }
@@ -161,9 +163,9 @@ namespace BarbelFlag
 
     public class StatusEffectParser
     {
-        public void Parse(string description)
+        public bool Parse(string description, out StatusEffect effect)
         {
-
+            throw new NotImplementedException();
         }
     }
 }
